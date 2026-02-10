@@ -1,6 +1,6 @@
-site_name: fdsn Documentation
+site_name: FDSN Portal
 site_url: https://fdsn.example.com
-site_description: "fdsn documentation"
+site_description: "FDSN Portal documentation"
 edit_uri: ""
 
 extra_css:
@@ -17,7 +17,12 @@ theme:
     - navigation.instant
     - navigation.instant.prefetch
     - navigation.instant.progress
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.follow
     - content.code.copy
+    - content.tabs.link
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -37,8 +42,32 @@ plugins:
   - search
 
 nav:
-  - Welcome: index.md
-  - Getting Started: getting-started.md
+  - Home: index.md
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quickstart: getting-started/quickstart.md
+  - Configuration: configuration.md
+  - Web UI Guide:
+    - web-ui/index.md
+    - Dashboard: web-ui/dashboard.md
+    - Sources: web-ui/sources.md
+    - Station Explorer: web-ui/explorer.md
+    - Station Browser: web-ui/stations.md
+    - Interactive Map: web-ui/map.md
+    - Waveform Viewer: web-ui/waveforms.md
+    - FDSN Query Tester: web-ui/fdsn-tester.md
+  - FDSN Web Services:
+    - fdsn-services/index.md
+    - Station Service: fdsn-services/station.md
+    - Dataselect Service: fdsn-services/dataselect.md
+    - Availability Service: fdsn-services/availability.md
+  - CLI Reference: cli-reference.md
+  - API Reference: api-reference.md
+  - Architecture: architecture.md
+  - Development:
+    - development/index.md
+    - Contributing: development/contributing.md
 
 markdown_extensions:
   # Python Markdown
