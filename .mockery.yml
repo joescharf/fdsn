@@ -1,0 +1,8 @@
+with-expecter: true
+packages:
+  github.com/joescharf/fdsn:
+    config:
+      recursive: true
+      dir: "{{.InterfaceDir}}/mocks"
+      mockname: "Mock{{.InterfaceName}}"
+      outpkg: "mocks"

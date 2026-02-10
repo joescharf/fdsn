@@ -1,0 +1,44 @@
+# Binaries
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Dependencies
+vendor/
+
+# Test files
+*.test
+coverage.out
+*.prof
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build artifacts
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# UI (bun/React)
+ui/node_modules/
+internal/ui/dist/assets/
+
+# Docs (mkdocs-material)
+docs/.venv/
+docs/site/

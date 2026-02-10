@@ -1,0 +1,71 @@
+site_name: fdsn Documentation
+site_url: https://fdsn.example.com
+site_description: "fdsn documentation"
+edit_uri: ""
+
+extra_css:
+  - stylesheets/extra.css
+
+theme:
+  name: material
+  language: en
+  features:
+    - search.suggest
+    - search.highlight
+    - search.share
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: light blue
+      accent: indigo
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+
+plugins:
+  - git-revision-date-localized
+  - search
+
+nav:
+  - Welcome: index.md
+  - Getting Started: getting-started.md
+
+markdown_extensions:
+  # Python Markdown
+  - admonition
+  - meta
+  - footnotes
+  - attr_list
+  - def_list
+  - toc:
+      permalink: true
+
+  # Python Markdown Extensions
+  - pymdownx.highlight:
+      anchor_linenums: true
+      auto_title: false
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tilde
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
