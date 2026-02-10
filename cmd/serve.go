@@ -4,25 +4,43 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/joescharf/fdsn/internal/ui"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/joescharf/fdsn/internal/api"
+	"github.com/joescharf/fdsn/internal/database"
 )
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "Start the embedded web UI server",
-	Long:  "Start an HTTP server that serves the embedded web UI.\nBy default it listens on port 8080. Use --port to change it.",
+	Short: "Start the FDSN portal server",
+	Long:  "Start the HTTP server that serves the FDSN portal UI and API endpoints.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		port := viper.GetInt("port")
+		dbPath := viper.GetString("db.path")
+		port := viper.GetInt("server.port")
 
-		handler, err := ui.Handler()
+		// Open database
+		db, err := database.New(dbPath)
 		if err != nil {
-			return fmt.Errorf("failed to initialize UI handler: %w", err)
+			return fmt.Errorf("database init: %w", err)
+		}
+		defer db.Close()
+		log.Info().Str("path", dbPath).Msg("database opened")
+
+		// Run migrations
+		if err := database.Migrate(db); err != nil {
+			return fmt.Errorf("database migrate: %w", err)
+		}
+
+		// Build router
+		handler, err := api.NewRouter(db)
+		if err != nil {
+			return fmt.Errorf("router init: %w", err)
 		}
 
 		addr := fmt.Sprintf(":%d", port)
-		fmt.Printf("Serving UI at http://localhost%s\n", addr)
+		log.Info().Str("addr", addr).Msg("starting server")
 		return http.ListenAndServe(addr, handler)
 	},
 }
@@ -31,6 +49,5 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 
 	serveCmd.Flags().IntP("port", "p", 8080, "port to listen on")
-	viper.SetDefault("port", 8080)
-	_ = viper.BindPFlag("port", serveCmd.Flags().Lookup("port"))
+	_ = viper.BindPFlag("server.port", serveCmd.Flags().Lookup("port"))
 }

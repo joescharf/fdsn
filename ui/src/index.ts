@@ -1,41 +1,32 @@
 import { serve } from "bun";
 import index from "./index.html";
 
+const GO_BACKEND = "http://localhost:8080";
+
 const server = serve({
   routes: {
     // Serve index.html for all unmatched routes.
     "/*": index,
+  },
 
-    "/api/hello": {
-      async GET(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "GET",
-        });
-      },
-      async PUT(req) {
-        return Response.json({
-          message: "Hello, world!",
-          method: "PUT",
-        });
-      },
-    },
-
-    "/api/hello/:name": async req => {
-      const name = req.params.name;
-      return Response.json({
-        message: `Hello, ${name}!`,
+  fetch(req) {
+    const url = new URL(req.url);
+    // Proxy /api/* and /fdsnws/* to Go backend in dev mode
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/fdsnws/")) {
+      const target = new URL(url.pathname + url.search, GO_BACKEND);
+      return fetch(target.toString(), {
+        method: req.method,
+        headers: req.headers,
+        body: req.body,
       });
-    },
+    }
+    return new Response("Not Found", { status: 404 });
   },
 
   development: process.env.NODE_ENV !== "production" && {
-    // Enable browser hot reloading in development
     hmr: true,
-
-    // Echo console logs from the browser to the server
     console: true,
   },
 });
 
-console.log(`🚀 Server running at ${server.url}`);
+console.log(`Server running at ${server.url}`);
