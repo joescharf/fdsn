@@ -23,11 +23,20 @@ func New(baseURL string) *Client {
 	}
 }
 
+// userAgent identifies this client to external FDSN services.
+const userAgent = "FDSN-Client/1.0"
+
 // get performs a GET request and returns the response body.
 // The caller is responsible for closing the returned ReadCloser.
 func (c *Client) get(path string) (io.ReadCloser, error) {
 	url := c.BaseURL + path
-	resp, err := c.HTTPClient.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GET %s: %w", url, err)
+	}
+	req.Header.Set("User-Agent", userAgent)
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("GET %s: %w", url, err)
 	}

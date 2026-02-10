@@ -31,6 +31,8 @@ export function useExploreStations(params: ExploreParams | null) {
         `/api/v1/sources/${params!.sourceId}/explore/stations${qs ? `?${qs}` : ""}`
       ),
     enabled: !!params && params.sourceId > 0,
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 min — avoid refetching the same external query
   });
 }
 
