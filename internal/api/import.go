@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/joescharf/fdsn/internal/fdsnclient"
@@ -11,8 +12,9 @@ import (
 )
 
 type importHandler struct {
-	sourceStore  store.SourceStore
-	stationStore store.StationStore
+	sourceStore       store.SourceStore
+	stationStore      store.StationStore
+	availabilityStore store.AvailabilityStore
 }
 
 type importRequest struct {
@@ -24,7 +26,9 @@ type importRequest struct {
 }
 
 type importResponse struct {
-	Imported int `json:"imported"`
+	Imported          int    `json:"imported"`
+	AvailabilityCount int    `json:"availability_count"`
+	AvailabilityError string `json:"availability_error,omitempty"`
 }
 
 func (h *importHandler) importStations(w http.ResponseWriter, r *http.Request) {
@@ -96,5 +100,108 @@ func (h *importHandler) importStations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, importResponse{Imported: len(channels)})
+	// Fetch availability data for imported channels
+	resp := importResponse{Imported: len(channels)}
+
+	if h.availabilityStore != nil {
+		availCount, availErr := h.fetchAvailability(client, src.ID, channels)
+		resp.AvailabilityCount = availCount
+		if availErr != "" {
+			resp.AvailabilityError = availErr
+		}
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// netStaKey is a deduplicated network+station pair.
+type netStaKey struct {
+	Network string
+	Station string
+}
+
+// fetchAvailability queries availability extents for all unique network+station
+// pairs in the imported channels and upserts them into the availability store.
+// It returns the count of availability records upserted and an error string (if any).
+func (h *importHandler) fetchAvailability(client *fdsnclient.Client, sourceID int64, channels []fdsnclient.ChannelTextRow) (int, string) {
+	// Build deduplicated set of network+station pairs
+	seen := make(map[netStaKey]bool)
+	var pairs []netStaKey
+	for _, ch := range channels {
+		key := netStaKey{Network: ch.Network, Station: ch.Station}
+		if !seen[key] {
+			seen[key] = true
+			pairs = append(pairs, key)
+		}
+	}
+
+	var allItems []store.AvailabilityItem
+	var availErr string
+
+	for _, pair := range pairs {
+		// Query availability extent from external source
+		extents, err := client.QueryAvailabilityExtent(fdsnclient.AvailabilityQuery{
+			Network: pair.Network,
+			Station: pair.Station,
+		})
+		if err != nil {
+			if fdsnclient.IsNotSupported(err) {
+				log.Info().
+					Str("network", pair.Network).
+					Str("station", pair.Station).
+					Msg("availability not supported by source")
+				continue
+			}
+			log.Warn().Err(err).
+				Str("network", pair.Network).
+				Str("station", pair.Station).
+				Msg("failed to fetch availability extent")
+			availErr = fmt.Sprintf("availability fetch error for %s.%s: %s", pair.Network, pair.Station, err.Error())
+			continue
+		}
+
+		if len(extents) == 0 {
+			continue
+		}
+
+		// Lookup channel IDs for this network+station
+		chanIDMap, err := h.stationStore.LookupChannelIDs(sourceID, pair.Network, pair.Station)
+		if err != nil {
+			log.Warn().Err(err).
+				Str("network", pair.Network).
+				Str("station", pair.Station).
+				Msg("failed to lookup channel IDs")
+			availErr = fmt.Sprintf("channel lookup error for %s.%s: %s", pair.Network, pair.Station, err.Error())
+			continue
+		}
+
+		// Match availability extents to channel IDs using location+channel key
+		for _, ext := range extents {
+			key := ext.Location + "." + ext.Channel
+			chanID, ok := chanIDMap[key]
+			if !ok {
+				continue
+			}
+			if ext.Earliest == nil || ext.Latest == nil {
+				continue
+			}
+			allItems = append(allItems, store.AvailabilityItem{
+				ChannelID: chanID,
+				Earliest:  fdsnclient.FormatTime(ext.Earliest),
+				Latest:    fdsnclient.FormatTime(ext.Latest),
+			})
+		}
+	}
+
+	// Batch upsert all collected availability items
+	if len(allItems) > 0 {
+		if err := h.availabilityStore.UpsertBatch(allItems); err != nil {
+			log.Warn().Err(err).Int("items", len(allItems)).Msg("failed to upsert availability batch")
+			availErr = fmt.Sprintf("availability upsert error: %s", err.Error())
+			return 0, availErr
+		}
+	}
+
+	log.Info().Int("availability_records", len(allItems)).Msg("availability import complete")
+	return len(allItems), availErr
 }

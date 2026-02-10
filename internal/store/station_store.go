@@ -37,7 +37,7 @@ func (s *stationStore) ListStations(networkCode, stationCode string, limit, offs
 	}
 
 	// Query
-	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code
+	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code, n.source_id AS source_id
 		FROM stations st
 		JOIN networks n ON st.network_id = n.id
 		WHERE %s
@@ -54,7 +54,7 @@ func (s *stationStore) ListStations(networkCode, stationCode string, limit, offs
 
 func (s *stationStore) GetStation(id int64) (*models.StationDetail, error) {
 	var station models.Station
-	err := s.db.Get(&station, `SELECT st.*, n.code AS network_code
+	err := s.db.Get(&station, `SELECT st.*, n.code AS network_code, n.source_id AS source_id
 		FROM stations st
 		JOIN networks n ON st.network_id = n.id
 		WHERE st.id = ?`, id)
@@ -153,6 +153,67 @@ func (s *stationStore) ListNetworks() ([]models.Network, error) {
 	var networks []models.Network
 	err := s.db.Select(&networks, "SELECT * FROM networks ORDER BY code")
 	return networks, err
+}
+
+func (s *stationStore) LookupChannelIDs(sourceID int64, networkCode, stationCode string) (map[string]int64, error) {
+	type row struct {
+		ID           int64  `db:"id"`
+		LocationCode string `db:"location_code"`
+		Code         string `db:"code"`
+	}
+	var rows []row
+	err := s.db.Select(&rows, `
+		SELECT c.id, c.location_code, c.code
+		FROM channels c
+		JOIN stations st ON c.station_id = st.id
+		JOIN networks n ON st.network_id = n.id
+		WHERE n.source_id = ? AND n.code = ? AND st.code = ?`,
+		sourceID, networkCode, stationCode)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]int64, len(rows))
+	for _, r := range rows {
+		key := r.LocationCode + "." + r.Code
+		m[key] = r.ID
+	}
+	return m, nil
+}
+
+func (s *stationStore) ListNetworksBySource(sourceID int64) ([]models.Network, error) {
+	var networks []models.Network
+	err := s.db.Select(&networks, "SELECT * FROM networks WHERE source_id = ? ORDER BY code", sourceID)
+	return networks, err
+}
+
+func (s *stationStore) ListStationsBySource(sourceID int64, networkCode string, limit, offset int) ([]models.Station, int64, error) {
+	where := "n.source_id = ?"
+	args := []any{sourceID}
+
+	if networkCode != "" {
+		where += " AND n.code = ?"
+		args = append(args, networkCode)
+	}
+
+	var total int64
+	countQ := fmt.Sprintf("SELECT COUNT(*) FROM stations st JOIN networks n ON st.network_id = n.id WHERE %s", where)
+	if err := s.db.Get(&total, countQ, args...); err != nil {
+		return nil, 0, err
+	}
+
+	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code, n.source_id AS source_id
+		FROM stations st
+		JOIN networks n ON st.network_id = n.id
+		WHERE %s
+		ORDER BY n.code, st.code
+		LIMIT ? OFFSET ?`, where)
+	args = append(args, limit, offset)
+
+	var stations []models.Station
+	if err := s.db.Select(&stations, q, args...); err != nil {
+		return nil, 0, err
+	}
+	return stations, total, nil
 }
 
 // NewStatsStore returns a StatsStore backed by SQLite.

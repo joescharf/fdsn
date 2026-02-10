@@ -26,6 +26,10 @@ export function WaveformsPage() {
   const hourAgo = new Date(now.getTime() - 3600 * 1000);
   const [starttime, setStarttime] = useState(isoString(hourAgo));
   const [endtime, setEndtime] = useState(isoString(now));
+  const [availableRange, setAvailableRange] = useState<{
+    earliest: string;
+    latest: string;
+  } | null>(null);
   const [fetchParams, setFetchParams] = useState<any>(null);
 
   const { data: waveformData, isLoading, isError, error } = useWaveformData(fetchParams);
@@ -42,6 +46,15 @@ export function WaveformsPage() {
       starttime,
       endtime,
     });
+  };
+
+  const handleAvailabilitySelect = (earliest: string, latest: string) => {
+    setAvailableRange({ earliest, latest });
+    // Auto-set time range to last hour of available data
+    const latestDate = new Date(latest);
+    const oneHourBefore = new Date(latestDate.getTime() - 3600 * 1000);
+    setStarttime(isoString(oneHourBefore));
+    setEndtime(isoString(latestDate));
   };
 
   return (
@@ -67,15 +80,18 @@ export function WaveformsPage() {
             onStationChange={(id, code) => {
               setStationId(id);
               setStationCode(code);
+              setAvailableRange(null);
             }}
             channelKey={channelKey}
             onChannelChange={setChannelKey}
+            onAvailabilitySelect={handleAvailabilitySelect}
           />
           <TimeRangeSelector
             starttime={starttime}
             endtime={endtime}
             onStartChange={setStarttime}
             onEndChange={setEndtime}
+            availableRange={availableRange}
           />
           <Button onClick={handleFetch} disabled={isLoading || !channelKey}>
             <Activity className="h-4 w-4 mr-2" />

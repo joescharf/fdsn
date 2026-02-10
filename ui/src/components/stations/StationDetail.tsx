@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router";
 import { useStation, useDeleteStation } from "@/hooks/useStations";
+import { useImportStations } from "@/hooks/useExplorer";
 import {
   Card,
   CardContent,
@@ -9,16 +10,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, RefreshCw } from "lucide-react";
 import { StationMap } from "@/components/map/StationMap";
 import { ChannelTable } from "./ChannelTable";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function StationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: station, isLoading } = useStation(Number(id));
   const deleteMutation = useDeleteStation();
+  const importMutation = useImportStations();
+  const qc = useQueryClient();
 
   const handleDelete = () => {
     if (!station || !confirm(`Delete station ${station.network_code}.${station.code}?`)) return;
@@ -28,6 +32,31 @@ export function StationDetail() {
         navigate("/stations");
       },
     });
+  };
+
+  const handleRefresh = () => {
+    if (!station?.source_id || !station.network_code) return;
+    importMutation.mutate(
+      {
+        source_id: station.source_id,
+        network: station.network_code,
+        station: station.code,
+      },
+      {
+        onSuccess: (data) => {
+          const parts = [`${data.imported} channels imported`];
+          if (data.availability_count > 0) {
+            parts.push(`${data.availability_count} availability records`);
+          }
+          toast.success(`Refreshed: ${parts.join(", ")}`);
+          qc.invalidateQueries({ queryKey: ["stations", Number(id)] });
+          qc.invalidateQueries({ queryKey: ["availability"] });
+        },
+        onError: (err) => {
+          toast.error(`Refresh failed: ${err.message}`);
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -52,10 +81,23 @@ export function StationDetail() {
             <p className="text-muted-foreground">{station.site_name}</p>
           </div>
         </div>
-        <Button variant="destructive" size="sm" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          {station.source_id ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={importMutation.isPending}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${importMutation.isPending ? "animate-spin" : ""}`} />
+              {importMutation.isPending ? "Refreshing..." : "Refresh Data"}
+            </Button>
+          ) : null}
+          <Button variant="destructive" size="sm" onClick={handleDelete}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -103,7 +145,10 @@ export function StationDetail() {
         <h3 className="text-lg font-semibold mb-3">
           Channels ({station.channels?.length ?? 0})
         </h3>
-        <ChannelTable channels={station.channels ?? []} />
+        <ChannelTable
+          channels={station.channels ?? []}
+          availability={station.availability}
+        />
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ type Station struct {
 	// Joined fields (not always populated)
 	NetworkCode string `db:"network_code" json:"network_code,omitempty"`
 	SourceName  string `db:"source_name" json:"source_name,omitempty"`
+	SourceID    int64  `db:"source_id" json:"source_id,omitempty"`
 }
 
 type Channel struct {
@@ -68,10 +69,21 @@ type Availability struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
+// ChannelAvailability pairs a channel with its data availability window.
+type ChannelAvailability struct {
+	ChannelID    int64    `db:"channel_id" json:"channel_id"`
+	LocationCode string   `db:"location_code" json:"location_code"`
+	ChannelCode  string   `db:"code" json:"channel_code"`
+	SampleRate   *float64 `db:"sample_rate" json:"sample_rate"`
+	Earliest     *string  `db:"earliest" json:"earliest"`
+	Latest       *string  `db:"latest" json:"latest"`
+}
+
 // StationDetail includes a Station plus its channels.
 type StationDetail struct {
 	Station
-	Channels []Channel `json:"channels"`
+	Channels     []Channel             `json:"channels"`
+	Availability []ChannelAvailability  `json:"availability,omitempty"`
 }
 
 // ImportChannel is used when importing channel-level data from an external FDSN source.

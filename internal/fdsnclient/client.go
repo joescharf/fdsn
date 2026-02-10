@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -50,4 +51,13 @@ func (c *Client) get(path string) (io.ReadCloser, error) {
 		return nil, fmt.Errorf("GET %s: status %d: %s", url, resp.StatusCode, string(body))
 	}
 	return resp.Body, nil
+}
+
+// IsNotSupported returns true if the error indicates the service is not available (404 or 501).
+func IsNotSupported(err error) bool {
+	if err == nil {
+		return false
+	}
+	s := err.Error()
+	return strings.Contains(s, "status 404") || strings.Contains(s, "status 501")
 }

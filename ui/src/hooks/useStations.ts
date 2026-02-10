@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import type { StationDetail, StationListResponse, Stats, Network } from "@/types";
+import type { StationDetail, StationListResponse, Stats, Network, ChannelAvailability } from "@/types";
 
 export function useStations(params?: {
   network?: string;
@@ -52,5 +52,33 @@ export function useStats() {
   return useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: () => apiFetch("/api/v1/stats"),
+  });
+}
+
+export function useNetworksBySource(sourceId: number) {
+  return useQuery<Network[]>({
+    queryKey: ["networks", "source", sourceId],
+    queryFn: () => apiFetch(`/api/v1/sources/${sourceId}/networks`),
+    enabled: sourceId > 0,
+  });
+}
+
+export function useStationsBySource(sourceId: number, networkCode: string) {
+  const params = new URLSearchParams();
+  if (networkCode) params.set("network", networkCode);
+  params.set("limit", "500");
+  const qs = params.toString();
+  return useQuery<StationListResponse>({
+    queryKey: ["stations", "source", sourceId, networkCode],
+    queryFn: () => apiFetch(`/api/v1/sources/${sourceId}/stations?${qs}`),
+    enabled: sourceId > 0,
+  });
+}
+
+export function useStationAvailability(stationId: number) {
+  return useQuery<ChannelAvailability[]>({
+    queryKey: ["availability", stationId],
+    queryFn: () => apiFetch(`/api/v1/stations/${stationId}/availability`),
+    enabled: stationId > 0,
   });
 }

@@ -48,7 +48,7 @@ export function useImportStations() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (params: ImportParams) =>
-      apiFetch<{ imported: number }>("/api/v1/import/stations", {
+      apiFetch<{ imported: number; availability_count: number; availability_error?: string }>("/api/v1/import/stations", {
         method: "POST",
         body: JSON.stringify(params),
       }),
@@ -56,6 +56,7 @@ export function useImportStations() {
       qc.invalidateQueries({ queryKey: ["stations"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
       qc.invalidateQueries({ queryKey: ["networks"] });
+      qc.invalidateQueries({ queryKey: ["availability"] });
     },
   });
 }

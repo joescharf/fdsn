@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useStations } from "@/hooks/useStations";
+import { useImportStations } from "@/hooks/useExplorer";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StationMap } from "@/components/map/StationMap";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, List } from "lucide-react";
+import { MapPin, List, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function StationsPage() {
   const [networkFilter, setNetworkFilter] = useState("");
@@ -18,8 +21,41 @@ export function StationsPage() {
     limit: 500,
   });
   const navigate = useNavigate();
+  const importMutation = useImportStations();
+  const qc = useQueryClient();
 
   const stations = data?.stations ?? [];
+
+  // Determine if we can refresh a whole network:
+  // need a network filter and at least one station with a source_id
+  const networkSourceId = networkFilter && stations.length > 0
+    ? stations[0].source_id
+    : undefined;
+
+  const handleRefreshNetwork = () => {
+    if (!networkSourceId || !networkFilter) return;
+    importMutation.mutate(
+      {
+        source_id: networkSourceId,
+        network: networkFilter,
+        station: stationFilter || "",
+      },
+      {
+        onSuccess: (data) => {
+          const parts = [`${data.imported} channels imported`];
+          if (data.availability_count > 0) {
+            parts.push(`${data.availability_count} availability records`);
+          }
+          toast.success(`Refreshed: ${parts.join(", ")}`);
+          qc.invalidateQueries({ queryKey: ["stations"] });
+          qc.invalidateQueries({ queryKey: ["availability"] });
+        },
+        onError: (err) => {
+          toast.error(`Refresh failed: ${err.message}`);
+        },
+      }
+    );
+  };
 
   return (
     <div className="space-y-4 h-full flex flex-col">
@@ -44,6 +80,21 @@ export function StationsPage() {
           className="w-40"
         />
         <Badge variant="secondary">{data?.total ?? 0} total</Badge>
+        {networkSourceId ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefreshNetwork}
+            disabled={importMutation.isPending}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${importMutation.isPending ? "animate-spin" : ""}`} />
+            {importMutation.isPending
+              ? "Refreshing..."
+              : stationFilter
+                ? `Refresh ${networkFilter}.${stationFilter}`
+                : `Refresh ${networkFilter}`}
+          </Button>
+        ) : null}
       </div>
 
       <Tabs defaultValue="table" className="flex-1 min-h-0 flex flex-col">

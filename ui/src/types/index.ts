@@ -31,6 +31,7 @@ export interface Station {
   created_at: string;
   network_code?: string;
   source_name?: string;
+  source_id?: number;
 }
 
 export interface Channel {
@@ -54,8 +55,18 @@ export interface Channel {
   created_at: string;
 }
 
+export interface ChannelAvailability {
+  channel_id: number;
+  location_code: string;
+  channel_code: string;
+  sample_rate: number | null;
+  earliest: string | null;
+  latest: string | null;
+}
+
 export interface StationDetail extends Station {
   channels: Channel[];
+  availability?: ChannelAvailability[];
 }
 
 export interface Stats {

@@ -17,7 +17,7 @@ interface Props {
   selected: ExploreStation[];
   onConfirm: () => void;
   isPending: boolean;
-  result?: { imported: number } | null;
+  result?: { imported: number; availability_count?: number; availability_error?: string } | null;
 }
 
 export function ImportDialog({
@@ -41,6 +41,9 @@ export function ImportDialog({
             <AlertDescription>
               Successfully imported {result.imported} channels from{" "}
               {selected.length} stations.
+              {result.availability_count ? (
+                <> Loaded {result.availability_count} availability records.</>
+              ) : null}
             </AlertDescription>
           </Alert>
         ) : (

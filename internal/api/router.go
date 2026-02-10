@@ -39,16 +39,18 @@ func NewRouter(db *sqlx.DB) (http.Handler, error) {
 	// Stores
 	srcStore := store.NewSourceStore(db)
 	staStore := store.NewStationStore(db)
+	availStore := store.NewAvailabilityStore(db)
 	statsStore := store.NewStatsStore(db)
 
 	// Handlers
 	sources := &sourcesHandler{store: srcStore}
 	explore := &exploreHandler{sourceStore: srcStore}
-	imp := &importHandler{sourceStore: srcStore, stationStore: staStore}
-	stations := &stationsHandler{store: staStore}
+	imp := &importHandler{sourceStore: srcStore, stationStore: staStore, availabilityStore: availStore}
+	stations := &stationsHandler{store: staStore, availStore: availStore}
 	networks := &networksHandler{store: staStore}
 	stats := &statsHandler{store: statsStore}
 	waveforms := &waveformsHandler{sourceStore: srcStore}
+	avail := &availabilityHandler{store: availStore}
 
 	// API routes
 	r.Route("/api/v1", func(r chi.Router) {
@@ -64,6 +66,10 @@ func NewRouter(db *sqlx.DB) (http.Handler, error) {
 		// Explore external FDSN sources
 		r.Get("/sources/{id}/explore/stations", explore.stations)
 
+		// Source-filtered endpoints
+		r.Get("/sources/{id}/networks", stations.listNetworksBySource)
+		r.Get("/sources/{id}/stations", stations.listStationsBySource)
+
 		// Import
 		r.Post("/import/stations", imp.importStations)
 
@@ -71,6 +77,9 @@ func NewRouter(db *sqlx.DB) (http.Handler, error) {
 		r.Get("/stations", stations.list)
 		r.Get("/stations/{id}", stations.get)
 		r.Delete("/stations/{id}", stations.delete)
+
+		// Availability
+		r.Get("/stations/{id}/availability", avail.getByStation)
 
 		// Networks
 		r.Get("/networks", networks.list)
