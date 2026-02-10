@@ -20,6 +20,7 @@ export function WaveformsPage() {
   const [sourceId, setSourceId] = useState(0);
   const [networkCode, setNetworkCode] = useState("");
   const [stationId, setStationId] = useState(0);
+  const [stationCode, setStationCode] = useState("");
   const [channelKey, setChannelKey] = useState("");
   const now = new Date();
   const hourAgo = new Date(now.getTime() - 3600 * 1000);
@@ -35,23 +36,7 @@ export function WaveformsPage() {
     setFetchParams({
       sourceId,
       net: networkCode,
-      sta: "", // will be resolved from stationId
-      loc: loc === "--" ? "" : loc,
-      cha,
-      starttime,
-      endtime,
-    });
-  };
-
-  // We need the station code — let's derive it from the channel selector
-  // The ChannelSelector already has station data loaded
-  const handleFetchWithStation = (staCode: string) => {
-    if (!sourceId || !networkCode || !channelKey) return;
-    const [loc, cha] = channelKey.split(".");
-    setFetchParams({
-      sourceId,
-      net: networkCode,
-      sta: staCode,
+      sta: stationCode,
       loc: loc === "--" ? "" : loc,
       cha,
       starttime,
@@ -79,7 +64,10 @@ export function WaveformsPage() {
             networkCode={networkCode}
             onNetworkChange={setNetworkCode}
             stationId={stationId}
-            onStationChange={setStationId}
+            onStationChange={(id, code) => {
+              setStationId(id);
+              setStationCode(code);
+            }}
             channelKey={channelKey}
             onChannelChange={setChannelKey}
           />
@@ -108,7 +96,7 @@ export function WaveformsPage() {
           )}
           <WaveformPlot
             data={waveformData ?? null}
-            label={channelKey ? `${networkCode}.${channelKey}` : ""}
+            label={channelKey ? `${networkCode}.${stationCode}.${channelKey}` : ""}
           />
         </CardContent>
       </Card>

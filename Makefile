@@ -11,6 +11,10 @@ ALL_TARGETS := build
 $(if $(wildcard ui/package.json),$(eval ALL_TARGETS += ui-build ui-embed))
 $(if $(wildcard docs/mkdocs.yml),$(eval ALL_TARGETS += docs-build))
 
+# If UI exists, ensure build rebuilds outdated UI assets automatically
+$(if $(wildcard ui/package.json),$(eval build: ui-embed))
+$(if $(wildcard ui/package.json),$(eval ui-embed: ui-build))
+
 .DEFAULT_GOAL := all
 
 ##@ App

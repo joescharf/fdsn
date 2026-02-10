@@ -17,7 +17,7 @@ interface Props {
   networkCode: string;
   onNetworkChange: (code: string) => void;
   stationId: number;
-  onStationChange: (id: number) => void;
+  onStationChange: (id: number, code: string) => void;
   channelKey: string;
   onChannelChange: (key: string) => void;
 }
@@ -84,7 +84,10 @@ export function ChannelSelector({
         <Label>Station</Label>
         <Select
           value={stationId > 0 ? String(stationId) : ""}
-          onValueChange={(v) => onStationChange(Number(v))}
+          onValueChange={(v) => {
+            const sta = stations.find((s: Station) => s.id === Number(v));
+            onStationChange(Number(v), sta?.code ?? "");
+          }}
         >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Station" />

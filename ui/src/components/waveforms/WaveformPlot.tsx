@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { WaveformFallback } from "./WaveformFallback";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Props {
   data: ArrayBuffer | null;
@@ -13,9 +12,7 @@ interface ParsedTrace {
 }
 
 export function WaveformPlot({ data, label }: Props) {
-  const canvasRef = useRef<HTMLDivElement>(null);
   const [trace, setTrace] = useState<ParsedTrace | null>(null);
-  const [seisplotReady, setSeisplotReady] = useState(false);
 
   useEffect(() => {
     if (!data || data.byteLength === 0) {
@@ -43,18 +40,18 @@ export function WaveformPlot({ data, label }: Props) {
           const times: number[] = [];
           const values: number[] = [];
 
-          // Extract time-value pairs
-          const startMs = seis.startTime.toDate().getTime();
+          // Extract time-value pairs from each segment
           const sps = seis.sampleRate;
-          const y = seis.y;
-
-          for (let i = 0; i < y.length; i++) {
-            times.push(startMs + (i / sps) * 1000);
-            values.push(y[i]);
+          for (const segment of seis.segments) {
+            const segStartMs = segment.startTime.toJSDate().getTime();
+            const y = segment.y;
+            for (let i = 0; i < y.length; i++) {
+              times.push(segStartMs + (i / sps) * 1000);
+              values.push(y[i]);
+            }
           }
 
           setTrace({ times, values });
-          setSeisplotReady(true);
         } catch (e) {
           console.error("Error parsing miniSEED:", e);
           setTrace(null);
@@ -79,27 +76,7 @@ export function WaveformPlot({ data, label }: Props) {
 
   return (
     <div className="space-y-2">
-      <Tabs defaultValue="chart">
-        <TabsList>
-          <TabsTrigger value="chart">Chart</TabsTrigger>
-          {seisplotReady && (
-            <TabsTrigger value="seisplot">Seismogram</TabsTrigger>
-          )}
-        </TabsList>
-
-        <TabsContent value="chart">
-          <WaveformFallback data={chartData} label={label} />
-        </TabsContent>
-
-        {seisplotReady && (
-          <TabsContent value="seisplot">
-            <div ref={canvasRef} className="w-full h-[300px]">
-              <WaveformFallback data={chartData} label={`${label} (parsed via seisplotjs)`} />
-            </div>
-          </TabsContent>
-        )}
-      </Tabs>
-
+      <WaveformFallback data={chartData} label={label} />
       <p className="text-xs text-muted-foreground">
         {data.byteLength.toLocaleString()} bytes |{" "}
         {chartData.length.toLocaleString()} samples
