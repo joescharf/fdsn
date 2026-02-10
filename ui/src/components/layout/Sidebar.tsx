@@ -24,7 +24,7 @@ export function Sidebar() {
   return (
     <aside className="w-56 border-r bg-muted/40 flex flex-col">
       <div className="p-4 border-b">
-        <h1 className="text-lg font-bold tracking-tight">BRTT FDSN</h1>
+        <h1 className="text-lg font-bold tracking-tight">FDSN Portal</h1>
         <p className="text-xs text-muted-foreground">Seismic Data Portal</p>
       </div>
       <nav className="flex-1 p-2 space-y-1">

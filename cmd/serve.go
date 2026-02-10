@@ -3,12 +3,14 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/joescharf/fdsn/internal/api"
+	"github.com/joescharf/fdsn/internal/config"
 	"github.com/joescharf/fdsn/internal/database"
 )
 
@@ -19,6 +21,11 @@ var serveCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		dbPath := viper.GetString("db.path")
 		port := viper.GetInt("server.port")
+
+		// Ensure database directory exists
+		if err := config.EnsureDir(filepath.Dir(dbPath)); err != nil {
+			return fmt.Errorf("create db directory: %w", err)
+		}
 
 		// Open database
 		db, err := database.New(dbPath)

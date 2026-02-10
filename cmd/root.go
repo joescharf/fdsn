@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -16,8 +17,8 @@ var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "fdsn",
-	Short: "BRTT FDSN Portal — serve and manage seismic station metadata",
-	Long:  "BRTT FDSN Portal connects to external FDSN data centres, imports station\nmetadata, and re-serves it through standard FDSN web-service endpoints.",
+	Short: "FDSN Portal — serve and manage seismic station metadata",
+	Long:  "FDSN Portal connects to external FDSN data centres, imports station\nmetadata, and re-serves it through standard FDSN web-service endpoints.",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Configure zerolog
 		level, err := zerolog.ParseLevel(viper.GetString("log.level"))
@@ -38,7 +39,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.fdsn.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ~/.config/fdsn/config.yaml)")
 }
 
 func initConfig() {
@@ -46,17 +47,18 @@ func initConfig() {
 	config.SetDefaults()
 
 	viper.SetEnvPrefix("FDSN")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-		viper.AddConfigPath(home)
+		if cfgDir, err := config.ConfigDir(); err == nil {
+			viper.AddConfigPath(cfgDir)
+		}
 		viper.AddConfigPath(".")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".fdsn")
+		viper.SetConfigName("config")
 	}
 
 	if err := viper.ReadInConfig(); err == nil {

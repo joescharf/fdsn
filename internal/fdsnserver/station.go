@@ -169,8 +169,8 @@ func (h *stationHandler) queryXML(w http.ResponseWriter, p StationParams) {
 	stationXML := models.FDSNStationXML{
 		XMLNS:     "http://www.fdsn.org/xml/station/1",
 		SchemaVer: "1.1",
-		Source:    "BRTT FDSN Portal",
-		Sender:    "BRTT",
+		Source:    "FDSN Portal",
+		Sender:    "FDSN",
 		Created:   time.Now().UTC().Format(time.RFC3339),
 	}
 
