@@ -2,11 +2,9 @@ version: 2
 
 before:
   hooks:
-    - cmd: bun install --frozen-lockfile
-      dir: ui
-    - cmd: bun run build
-      dir: ui
-    - cmd: sh -c "rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/"
+    - sh -c "cd ui && bun install --frozen-lockfile"
+    - sh -c "cd ui && bun run build"
+    - sh -c "rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/"
 
 builds:
   - env:
