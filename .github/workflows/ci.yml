@@ -57,6 +57,6 @@ jobs:
         run: rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
