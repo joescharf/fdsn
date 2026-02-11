@@ -1,7 +1,9 @@
 site_name: FDSN Portal
-site_url: https://fdsn.example.com
+site_url: https://joescharf.github.io/fdsn/
 site_description: "FDSN Portal documentation"
-edit_uri: ""
+repo_url: https://github.com/joescharf/fdsn
+repo_name: joescharf/fdsn
+edit_uri: edit/main/docs/docs/
 
 extra_css:
   - stylesheets/extra.css

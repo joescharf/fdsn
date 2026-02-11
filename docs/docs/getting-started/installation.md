@@ -1,21 +1,63 @@
 ---
 title: Installation
-description: Install FDSN Portal using go install or by building from source.
+description: Install FDSN Portal via Homebrew, Docker, binary download, go install, or by building from source.
 ---
 
 # Installation
 
 Choose one of the methods below to install FDSN Portal.
 
+=== "Homebrew"
+
+    The easiest way to install on macOS or Linux:
+
+    ```bash
+    brew install joescharf/tap/fdsn
+    ```
+
+    This installs the `fdsn` binary with the embedded UI included.
+
+=== "Docker"
+
+    Run FDSN Portal as a container with a persistent volume for the database:
+
+    ```bash
+    docker run -p 8080:8080 -v fdsn-data:/data ghcr.io/joescharf/fdsn:latest
+    ```
+
+    The container stores the SQLite database at `/data/fdsn.db`. The `-v fdsn-data:/data` flag creates a named volume so your data persists across container restarts.
+
+    To initialize configuration inside the container:
+
+    ```bash
+    docker run -v fdsn-data:/data ghcr.io/joescharf/fdsn:latest config init
+    ```
+
+=== "Binary Download"
+
+    Download the latest release for your platform from [GitHub Releases](https://github.com/joescharf/fdsn/releases).
+
+    Extract the archive and move the binary to a directory on your `PATH`:
+
+    ```bash
+    # Example for Linux amd64
+    tar xzf fdsn_*_linux_amd64.tar.gz
+    sudo mv fdsn /usr/local/bin/
+    ```
+
 === "go install"
 
-    The fastest way to get the `fdsn` binary is with `go install`:
+    Install with `go install`:
 
     ```bash
     go install github.com/joescharf/fdsn@latest
     ```
 
     This downloads the module, builds the binary, and places it in your `$GOPATH/bin` directory. Make sure that directory is on your `PATH`.
+
+    !!! warning "No embedded UI"
+
+        Binaries installed via `go install` do **not** include the React UI because the UI build step requires Bun and is not part of the standard Go build. You will get a fully functional backend with API and FDSN endpoints, but no web interface. For the full experience, use Homebrew, Docker, or build from source.
 
 === "Build from Source"
 
@@ -45,7 +87,7 @@ fdsn version
 You should see output similar to:
 
 ```
-fdsn dev (commit: abc1234, built: 2024-01-01T00:00:00Z)
+fdsn 0.1.0 (commit: abc1234, built: 2026-01-01T00:00:00Z)
 ```
 
 If the command is not found, verify that the directory containing the `fdsn` binary is on your `PATH`.
