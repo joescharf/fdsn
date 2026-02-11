@@ -23,3 +23,37 @@ The following pages are available in the web interface:
 
 !!! tip
     The UI uses client-side routing, so all routes listed above are handled by the single-page application (SPA). The Go server returns the same `index.html` for any path that does not match an API route or static asset, allowing React Router to resolve the page on the client side.
+
+## Page Screenshots
+
+### [Dashboard](dashboard.md)
+
+![Dashboard](../img/fdsn-dashboard.png)
+
+### [Sources](sources.md)
+
+![Sources](../img/fdsn-sources.png)
+
+### [Station Explorer](explorer.md)
+
+![Station Explorer](../img/fdsn-explorer.png)
+
+### [Station Browser](stations.md)
+
+![Station Browser](../img/fdsn-stations.png)
+
+### [Station Detail](stations.md)
+
+![Station Detail](../img/fdsn-station-detail.png)
+
+### [Interactive Map](map.md)
+
+![Interactive Map](../img/fdsn-map.png)
+
+### [Waveform Viewer](waveforms.md)
+
+![Waveform Viewer](../img/fdsn-waveforms.png)
+
+### [FDSN Query Tester](fdsn-tester.md)
+
+![FDSN Query Tester](../img/fdsn-tester.png)

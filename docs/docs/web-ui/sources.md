@@ -6,6 +6,8 @@
 
 Sources represent external FDSN data centres that the portal connects to for exploring and importing station metadata. Each source is defined by a name and a base URL that points to an FDSN web services deployment.
 
+![Sources](../img/fdsn-sources.png)
+
 ## Default Sources
 
 Two sources are automatically seeded into the database on startup from the config file:

@@ -6,6 +6,8 @@
 
 The FDSN Query Tester is a built-in tool for constructing and testing queries against the portal's own FDSN web-service endpoints. It provides a form-based interface for building valid FDSN queries and inspecting the responses without leaving the browser.
 
+![FDSN Query Tester](../img/fdsn-tester.png)
+
 ## Service Selection
 
 Choose which FDSN service to test:

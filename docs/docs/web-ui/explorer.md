@@ -6,6 +6,8 @@
 
 The Station Explorer lets you search for stations on external FDSN data centres and import them into your local database. This is the primary workflow for populating your FDSN Portal instance with station metadata.
 
+![Station Explorer](../img/fdsn-explorer.png)
+
 ## Search Filters
 
 The following filters are available when querying an external data centre:

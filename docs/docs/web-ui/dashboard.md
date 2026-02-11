@@ -6,6 +6,8 @@
 
 The dashboard provides an at-a-glance summary of the data in your FDSN Portal instance. It is the first page displayed when you open the web interface.
 
+![Dashboard](../img/fdsn-dashboard.png)
+
 ## Statistics Cards
 
 The dashboard displays four statistics cards showing counts of key entities in your local database:

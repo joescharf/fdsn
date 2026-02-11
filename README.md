@@ -16,6 +16,19 @@ Seismic station metadata management -- import, explore, and re-serve FDSN data f
 - **Interactive web UI** -- dashboard, station explorer, interactive map, and waveform viewer
 - **Flexible configuration** -- YAML config file, environment variables, and CLI flags
 
+## Web UI
+
+<table>
+  <tr>
+    <td align="center"><b>Dashboard</b><br/><img src="docs/docs/img/fdsn-dashboard.png" width="400"/></td>
+    <td align="center"><b>Interactive Map</b><br/><img src="docs/docs/img/fdsn-map.png" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Station Explorer</b><br/><img src="docs/docs/img/fdsn-explorer.png" width="400"/></td>
+    <td align="center"><b>Waveform Viewer</b><br/><img src="docs/docs/img/fdsn-waveforms.png" width="400"/></td>
+  </tr>
+</table>
+
 ## Quick Start
 
 ### Install

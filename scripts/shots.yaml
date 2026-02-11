@@ -1,20 +1,126 @@
+# Dashboard
 - output: img-raw/fdsn-dashboard.png
   url: http://localhost:8080
   wait: 100
   width: 800
+
+# Sources
 - output: img-raw/fdsn-sources.png
   url: http://localhost:8080/sources
   wait: 100
   width: 800
+
+# Stations
 - output: img-raw/fdsn-stations.png
   url: http://localhost:8080/stations
   wait: 100
+  width: 1024
+
+# Station Detail
+- output: img-raw/fdsn-station-detail.png
+  url: http://localhost:8080/stations/6
+  wait: 3000
+  width: 1024
+  height: 900
+
+# FDSN Tester
+- output: img-raw/fdsn-tester.png
+  url: http://localhost:8080/fdsn
   width: 800
+  height: 900
+  javascript: |
+    (async () => {
+      const btn = document.querySelector('button[type="submit"]');
+      if (btn) btn.click();
+      await new Promise(r => setTimeout(r, 3000));
+    })();
+
+# Map (Leaflet interaction - zoom to US west coast)
 - output: img-raw/fdsn-map.png
   url: http://localhost:8080/map
-  wait: 100
   width: 800
+  javascript: |
+    (async () => {
+      await new Promise(r => setTimeout(r, 2000));
+      const container = document.querySelector('.leaflet-container');
+      if (container) {
+        let map = null;
+        for (const key of Object.keys(container)) {
+          const val = container[key];
+          if (val && typeof val === 'object' && typeof val.setView === 'function') {
+            map = val;
+            break;
+          }
+        }
+        if (map) {
+          map.setView([38, -120], 5);
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      }
+    })();
+
+# Explorer (select EarthScope source, then click IU badge)
+- output: img-raw/fdsn-explorer.png
+  url: http://localhost:8080/explorer
+  width: 1024
+  height: 900
+  javascript: |
+    (async () => {
+      async function selectRadix(trigger, text) {
+        trigger.click();
+        await new Promise(r => setTimeout(r, 300));
+        const item = [...document.querySelectorAll('[data-slot="select-item"]')]
+          .find(i => i.textContent.includes(text));
+        if (item) item.click();
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      const trigger = document.querySelector('[data-slot="select-trigger"]');
+      if (trigger) {
+        await selectRadix(trigger, 'EarthScope');
+        const badge = [...document.querySelectorAll('[data-slot="badge"]')]
+          .find(b => b.textContent.includes('IU'));
+        if (badge) {
+          badge.click();
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      }
+    })();
+
+# Waveforms (cascade: Source → Network → Station → Channel → set 1h window → Fetch)
 - output: img-raw/fdsn-waveforms.png
   url: http://localhost:8080/waveforms
-  wait: 100
-  width: 800
+  width: 1024
+  height: 900
+  javascript: |
+    (async () => {
+      async function selectRadix(index, text) {
+        const triggers = document.querySelectorAll('[data-slot="select-trigger"]');
+        if (!triggers[index]) return;
+        triggers[index].click();
+        await new Promise(r => setTimeout(r, 300));
+        const item = [...document.querySelectorAll('[data-slot="select-item"]')]
+          .find(i => i.textContent.includes(text));
+        if (item) item.click();
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      function setInput(input, value) {
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        setter.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      await selectRadix(0, 'EarthScope');
+      await selectRadix(1, 'IU');
+      await selectRadix(2, 'ANMO');
+      await selectRadix(3, '20.EN1');
+      const dtInputs = document.querySelectorAll('input[type="datetime-local"]');
+      if (dtInputs.length >= 2) {
+        setInput(dtInputs[0], '2012-05-18T06:20');
+        setInput(dtInputs[1], '2012-05-18T07:20');
+      }
+      await new Promise(r => setTimeout(r, 500));
+      const fetchBtn = [...document.querySelectorAll('button')]
+        .find(b => b.textContent.includes('Fetch Waveform'));
+      if (fetchBtn) fetchBtn.click();
+      await new Promise(r => setTimeout(r, 10000));
+    })();

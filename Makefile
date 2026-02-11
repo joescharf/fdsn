@@ -62,7 +62,7 @@ mocks: ## Generate mocks with mockery
 	mockery
 
 ##@ Docs (mkdocs-material via uv)
-.PHONY: docs-serve docs-build docs-deps
+.PHONY: docs-serve docs-build docs-deps screenshots
 
 docs-serve: ## Serve docs locally (requires uv + docs/ directory)
 	@[ -d docs ] && [ -f docs/mkdocs.yml ] || { echo "No docs/ directory with mkdocs.yml found."; exit 1; }
@@ -75,6 +75,9 @@ docs-build: ## Build docs site (requires uv + docs/ directory)
 docs-deps: ## Install doc dependencies (requires uv + docs/ directory)
 	@[ -d docs ] && [ -f docs/pyproject.toml ] || { echo "No docs/ directory with pyproject.toml found."; exit 1; }
 	cd docs && uv sync
+
+screenshots: ## Capture documentation screenshots (requires running app on :8080)
+	bash scripts/scrape.sh
 
 ##@ UI (React/shadcn via bun)
 .PHONY: ui-dev ui-build ui-embed ui-deps

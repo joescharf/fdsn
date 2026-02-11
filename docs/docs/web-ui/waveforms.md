@@ -6,6 +6,8 @@
 
 The Waveform Viewer fetches and displays seismic waveform data in miniSEED format from external FDSN data centres. It uses seisplotjs for rendering time-series plots directly in the browser.
 
+![Waveform Viewer](../img/fdsn-waveforms.png)
+
 ## Channel Selection
 
 The viewer uses a hierarchical selection process to identify the channel to display:

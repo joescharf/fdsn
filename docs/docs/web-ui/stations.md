@@ -6,6 +6,8 @@
 
 Browse all stations that have been imported into the local database. The Station Browser provides a paginated table view of station metadata with filtering capabilities, and detailed per-station views including channel inventories.
 
+![Station Browser](../img/fdsn-stations.png)
+
 ## Table View
 
 Stations are displayed in a paginated table with the following columns:
@@ -29,6 +31,8 @@ Use the network and station filter inputs at the top of the table to narrow resu
 ## Station Detail
 
 Click any station row to navigate to its detail page at `/stations/:id`. The detail page displays:
+
+![Station Detail](../img/fdsn-station-detail.png)
 
 **Station metadata:**
 

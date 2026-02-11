@@ -6,6 +6,8 @@
 
 The interactive map provides a geographic view of all imported stations using Leaflet. Station positions are plotted on a world map, giving a spatial overview of your seismic network coverage.
 
+![Interactive Map](../img/fdsn-map.png)
+
 ## Map Features
 
 - **Station markers** -- Each station is represented by a marker placed at its latitude and longitude coordinates.
