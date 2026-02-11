@@ -32,7 +32,7 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("database init: %w", err)
 		}
-		defer db.Close()
+		defer func() { _ = db.Close() }()
 		log.Info().Str("path", dbPath).Msg("database opened")
 
 		// Run migrations
