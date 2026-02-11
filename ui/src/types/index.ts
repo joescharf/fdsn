@@ -32,6 +32,7 @@ export interface Station {
   network_code?: string;
   source_name?: string;
   source_id?: number;
+  has_availability?: boolean;
 }
 
 export interface Channel {
@@ -90,4 +91,17 @@ export interface ExploreStation {
 export interface StationListResponse {
   stations: Station[];
   total: number;
+}
+
+export interface RefreshTarget {
+  source_id: number;
+  source_name: string;
+  network_code: string;
+}
+
+export interface ImportResponse {
+  imported: number;
+  availability_count: number;
+  availability_error?: string;
+  availability_status?: string;
 }

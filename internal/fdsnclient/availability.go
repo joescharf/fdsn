@@ -62,7 +62,9 @@ func buildAvailabilityPath(q AvailabilityQuery) string {
 }
 
 // parseAvailabilityExtent parses the FDSN text format for availability extent responses.
-// Format: #Network|Station|Location|Channel|Quality|SampleRate|Earliest|Latest
+// Supports both pipe-delimited and space-delimited formats:
+//   Pipe:  Network|Station|Location|Channel|Quality|SampleRate|Earliest|Latest
+//   Space: Network Station Location Channel Quality SampleRate Earliest Latest [Updated TimeSpans Restriction]
 func parseAvailabilityExtent(r io.Reader) ([]AvailabilityExtent, error) {
 	scanner := bufio.NewScanner(r)
 	var rows []AvailabilityExtent
@@ -71,7 +73,13 @@ func parseAvailabilityExtent(r io.Reader) ([]AvailabilityExtent, error) {
 		if line == "" || line[0] == '#' {
 			continue
 		}
-		fields := strings.Split(line, "|")
+
+		var fields []string
+		if strings.Contains(line, "|") {
+			fields = strings.Split(line, "|")
+		} else {
+			fields = strings.Fields(line)
+		}
 		if len(fields) < 8 {
 			continue
 		}

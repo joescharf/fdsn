@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/joescharf/fdsn/internal/fdsnclient"
 	"github.com/joescharf/fdsn/internal/models"
@@ -26,9 +27,19 @@ type importRequest struct {
 }
 
 type importResponse struct {
-	Imported          int    `json:"imported"`
-	AvailabilityCount int    `json:"availability_count"`
-	AvailabilityError string `json:"availability_error,omitempty"`
+	Imported           int    `json:"imported"`
+	AvailabilityCount  int    `json:"availability_count"`
+	AvailabilityError  string `json:"availability_error,omitempty"`
+	AvailabilityStatus string `json:"availability_status"`
+}
+
+func (h *importHandler) refreshTargets(w http.ResponseWriter, r *http.Request) {
+	targets, err := h.stationStore.ListUniqueSourceNetworks()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, targets)
 }
 
 func (h *importHandler) importStations(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +119,18 @@ func (h *importHandler) importStations(w http.ResponseWriter, r *http.Request) {
 		resp.AvailabilityCount = availCount
 		if availErr != "" {
 			resp.AvailabilityError = availErr
+			if strings.Contains(availErr, "not supported") {
+				resp.AvailabilityStatus = "not_supported"
+			} else {
+				resp.AvailabilityStatus = "error"
+			}
+		} else if availCount > 0 {
+			resp.AvailabilityStatus = "ok"
+		} else {
+			resp.AvailabilityStatus = "no_data"
 		}
+	} else {
+		resp.AvailabilityStatus = "not_configured"
 	}
 
 	writeJSON(w, http.StatusOK, resp)
@@ -150,6 +172,7 @@ func (h *importHandler) fetchAvailability(client *fdsnclient.Client, sourceID in
 					Str("network", pair.Network).
 					Str("station", pair.Station).
 					Msg("availability not supported by source")
+				availErr = "availability not supported by this source"
 				continue
 			}
 			log.Warn().Err(err).

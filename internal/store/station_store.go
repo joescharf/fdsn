@@ -37,7 +37,8 @@ func (s *stationStore) ListStations(networkCode, stationCode string, limit, offs
 	}
 
 	// Query
-	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code, n.source_id AS source_id
+	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code, n.source_id AS source_id,
+		EXISTS (SELECT 1 FROM availability a JOIN channels c ON a.channel_id = c.id WHERE c.station_id = st.id) AS has_availability
 		FROM stations st
 		JOIN networks n ON st.network_id = n.id
 		WHERE %s
@@ -95,11 +96,11 @@ func (s *stationStore) ImportStations(sourceID int64, channels []models.ImportCh
 	stationIDs := map[staKey]int64{}
 
 	for _, ch := range channels {
-		// Upsert network
+		// Upsert network: find by (source_id, code), update if exists, insert if not
 		nk := netKey{code: ch.NetworkCode}
 		netID, ok := networkIDs[nk]
 		if !ok {
-			err := tx.Get(&netID, "SELECT id FROM networks WHERE source_id = ? AND code = ?", sourceID, ch.NetworkCode)
+			err := tx.Get(&netID, "SELECT id FROM networks WHERE source_id = ? AND code = ? LIMIT 1", sourceID, ch.NetworkCode)
 			if err != nil {
 				res, err := tx.Exec(
 					"INSERT INTO networks (source_id, code, description) VALUES (?, ?, ?)",
@@ -109,15 +110,22 @@ func (s *stationStore) ImportStations(sourceID int64, channels []models.ImportCh
 					return fmt.Errorf("insert network %s: %w", ch.NetworkCode, err)
 				}
 				netID, _ = res.LastInsertId()
+			} else {
+				// Update existing network metadata
+				_, err = tx.Exec("UPDATE networks SET description = ? WHERE id = ?",
+					ch.NetworkDescription, netID)
+				if err != nil {
+					return fmt.Errorf("update network %s: %w", ch.NetworkCode, err)
+				}
 			}
 			networkIDs[nk] = netID
 		}
 
-		// Upsert station
+		// Upsert station: find by (network_id, code), update if exists, insert if not
 		sk := staKey{netID: netID, code: ch.StationCode}
 		staID, ok := stationIDs[sk]
 		if !ok {
-			err := tx.Get(&staID, "SELECT id FROM stations WHERE network_id = ? AND code = ?", netID, ch.StationCode)
+			err := tx.Get(&staID, "SELECT id FROM stations WHERE network_id = ? AND code = ? LIMIT 1", netID, ch.StationCode)
 			if err != nil {
 				res, err := tx.Exec(
 					"INSERT INTO stations (network_id, code, latitude, longitude, elevation, site_name, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -127,13 +135,22 @@ func (s *stationStore) ImportStations(sourceID int64, channels []models.ImportCh
 					return fmt.Errorf("insert station %s: %w", ch.StationCode, err)
 				}
 				staID, _ = res.LastInsertId()
+			} else {
+				// Update existing station metadata
+				_, err = tx.Exec(
+					"UPDATE stations SET latitude = ?, longitude = ?, elevation = ?, site_name = ?, start_time = ?, end_time = ? WHERE id = ?",
+					ch.Latitude, ch.Longitude, ch.Elevation, ch.SiteName, ch.StationStartTime, ch.StationEndTime, staID,
+				)
+				if err != nil {
+					return fmt.Errorf("update station %s: %w", ch.StationCode, err)
+				}
 			}
 			stationIDs[sk] = staID
 		}
 
-		// Insert channel (skip on conflict)
+		// Upsert channel: replace on conflict so metadata gets updated on re-import
 		_, err := tx.Exec(
-			`INSERT OR IGNORE INTO channels (station_id, location_code, code, latitude, longitude, elevation, depth, azimuth, dip, sensor_description, scale, scale_freq, scale_units, sample_rate, start_time, end_time)
+			`INSERT OR REPLACE INTO channels (station_id, location_code, code, latitude, longitude, elevation, depth, azimuth, dip, sensor_description, scale, scale_freq, scale_units, sample_rate, start_time, end_time)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			staID, ch.LocationCode, ch.ChannelCode,
 			ch.ChanLatitude, ch.ChanLongitude, ch.ChanElevation, ch.Depth,
@@ -201,7 +218,8 @@ func (s *stationStore) ListStationsBySource(sourceID int64, networkCode string, 
 		return nil, 0, err
 	}
 
-	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code, n.source_id AS source_id
+	q := fmt.Sprintf(`SELECT st.*, n.code AS network_code, n.source_id AS source_id,
+		EXISTS (SELECT 1 FROM availability a JOIN channels c ON a.channel_id = c.id WHERE c.station_id = st.id) AS has_availability
 		FROM stations st
 		JOIN networks n ON st.network_id = n.id
 		WHERE %s
@@ -214,6 +232,16 @@ func (s *stationStore) ListStationsBySource(sourceID int64, networkCode string, 
 		return nil, 0, err
 	}
 	return stations, total, nil
+}
+
+func (s *stationStore) ListUniqueSourceNetworks() ([]models.SourceNetwork, error) {
+	var result []models.SourceNetwork
+	err := s.db.Select(&result, `
+		SELECT DISTINCT n.source_id, src.name AS source_name, n.code AS network_code
+		FROM networks n
+		JOIN sources src ON n.source_id = src.id
+		ORDER BY src.name, n.code`)
+	return result, err
 }
 
 // NewStatsStore returns a StatsStore backed by SQLite.

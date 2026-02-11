@@ -72,6 +72,7 @@ func NewRouter(db *sqlx.DB) (http.Handler, error) {
 
 		// Import
 		r.Post("/import/stations", imp.importStations)
+		r.Get("/import/refresh-targets", imp.refreshTargets)
 
 		// Stations
 		r.Get("/stations", stations.list)

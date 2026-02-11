@@ -1,4 +1,5 @@
-import type { ExploreStation } from "@/types";
+import { useNavigate } from "react-router";
+import type { ExploreStation, ImportResponse } from "@/types";
 import {
   Dialog,
   DialogContent,
@@ -17,7 +18,7 @@ interface Props {
   selected: ExploreStation[];
   onConfirm: () => void;
   isPending: boolean;
-  result?: { imported: number; availability_count?: number; availability_error?: string } | null;
+  result?: ImportResponse | null;
 }
 
 export function ImportDialog({
@@ -28,6 +29,8 @@ export function ImportDialog({
   isPending,
   result,
 }: Props) {
+  const navigate = useNavigate();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -36,16 +39,24 @@ export function ImportDialog({
         </DialogHeader>
 
         {result ? (
-          <Alert>
-            <CheckCircle className="h-4 w-4" />
-            <AlertDescription>
-              Successfully imported {result.imported} channels from{" "}
-              {selected.length} stations.
-              {result.availability_count ? (
-                <> Loaded {result.availability_count} availability records.</>
-              ) : null}
-            </AlertDescription>
-          </Alert>
+          <div className="space-y-3">
+            <Alert>
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                Successfully imported {result.imported} channels from{" "}
+                {selected.length} stations.
+                {result.availability_count ? (
+                  <> Loaded {result.availability_count} availability records.</>
+                ) : null}
+                {result.availability_status === "not_supported" && (
+                  <> Availability data is not supported by this source.</>
+                )}
+                {result.availability_status === "no_data" && (
+                  <> No availability data found.</>
+                )}
+              </AlertDescription>
+            </Alert>
+          </div>
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
@@ -63,7 +74,19 @@ export function ImportDialog({
 
         <DialogFooter>
           {result ? (
-            <Button onClick={() => onOpenChange(false)}>Done</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Done
+              </Button>
+              <Button
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate("/stations");
+                }}
+              >
+                View Imported Stations
+              </Button>
+            </div>
           ) : (
             <>
               <Button

@@ -38,6 +38,7 @@ type Station struct {
 	NetworkCode string `db:"network_code" json:"network_code,omitempty"`
 	SourceName  string `db:"source_name" json:"source_name,omitempty"`
 	SourceID    int64  `db:"source_id" json:"source_id,omitempty"`
+	HasAvailability bool `db:"has_availability" json:"has_availability"`
 }
 
 type Channel struct {
@@ -112,6 +113,13 @@ type ImportChannel struct {
 	SampleRate        float64
 	ChanStartTime     *time.Time
 	ChanEndTime       *time.Time
+}
+
+// SourceNetwork represents a unique source+network pair for refresh targets.
+type SourceNetwork struct {
+	SourceID    int64  `db:"source_id" json:"source_id"`
+	SourceName  string `db:"source_name" json:"source_name"`
+	NetworkCode string `db:"network_code" json:"network_code"`
 }
 
 // Stats holds dashboard summary counts.

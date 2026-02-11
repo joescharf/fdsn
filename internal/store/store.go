@@ -23,6 +23,7 @@ type StationStore interface {
 	LookupChannelIDs(sourceID int64, networkCode, stationCode string) (map[string]int64, error)
 	ListNetworksBySource(sourceID int64) ([]models.Network, error)
 	ListStationsBySource(sourceID int64, networkCode string, limit, offset int) ([]models.Station, int64, error)
+	ListUniqueSourceNetworks() ([]models.SourceNetwork, error)
 }
 
 // AvailabilityItem represents a single availability record for batch operations.
