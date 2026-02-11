@@ -1,0 +1,87 @@
+version: 2
+
+before:
+  hooks:
+    - cmd: bun install --frozen-lockfile
+      dir: ui
+    - cmd: bun run build
+      dir: ui
+    - cmd: sh -c "rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/"
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+brews:
+  - repository:
+      owner: joescharf
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/joescharf/fdsn
+    description: "Seismic station metadata management -- import, explore, and re-serve FDSN data from a single binary."
+    install: |
+      bin.install "fdsn"
+    test: |
+      system "#{bin}/fdsn", "version"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/joescharf/fdsn:{{ .Version }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/amd64"
+    goarch: amd64
+  - image_templates:
+      - "ghcr.io/joescharf/fdsn:{{ .Version }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--platform=linux/arm64"
+    goarch: arm64
+
+docker_manifests:
+  - name_template: "ghcr.io/joescharf/fdsn:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/joescharf/fdsn:{{ .Version }}-amd64"
+      - "ghcr.io/joescharf/fdsn:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/joescharf/fdsn:latest"
+    image_templates:
+      - "ghcr.io/joescharf/fdsn:{{ .Version }}-amd64"
+      - "ghcr.io/joescharf/fdsn:{{ .Version }}-arm64"

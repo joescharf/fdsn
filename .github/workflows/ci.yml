@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install UI dependencies
+        run: cd ui && bun install --frozen-lockfile
+
+      - name: Build UI
+        run: cd ui && bun run build
+
+      - name: Embed UI
+        run: rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/
+
+      - name: Run tests
+        run: go test -v -race -count=1 ./...
+
+      - name: Run vet
+        run: go vet ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install UI dependencies
+        run: cd ui && bun install --frozen-lockfile
+
+      - name: Build UI
+        run: cd ui && bun run build
+
+      - name: Embed UI
+        run: rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
