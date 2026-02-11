@@ -17,12 +17,12 @@ func (h *availabilityHandler) query(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 
 	type row struct {
-		Network   string    `db:"network_code"`
-		Station   string    `db:"station_code"`
-		Location  string    `db:"location_code"`
-		Channel   string    `db:"channel_code"`
-		Earliest  time.Time `db:"earliest"`
-		Latest    time.Time `db:"latest"`
+		Network  string    `db:"network_code"`
+		Station  string    `db:"station_code"`
+		Location string    `db:"location_code"`
+		Channel  string    `db:"channel_code"`
+		Earliest time.Time `db:"earliest"`
+		Latest   time.Time `db:"latest"`
 	}
 
 	var rows []row

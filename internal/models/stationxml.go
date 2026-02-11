@@ -33,17 +33,17 @@ type XMLStation struct {
 }
 
 type XMLChannel struct {
-	Code         string   `xml:"code,attr"`
-	LocationCode string   `xml:"locationCode,attr"`
-	StartDate    string   `xml:"startDate,attr,omitempty"`
-	EndDate      string   `xml:"endDate,attr,omitempty"`
-	Latitude     XMLValue `xml:"Latitude"`
-	Longitude    XMLValue `xml:"Longitude"`
-	Elevation    XMLValue `xml:"Elevation"`
-	Depth        XMLValue `xml:"Depth"`
-	Azimuth      XMLValue `xml:"Azimuth,omitempty"`
-	Dip          XMLValue `xml:"Dip,omitempty"`
-	SampleRate   float64  `xml:"SampleRate,omitempty"`
+	Code         string     `xml:"code,attr"`
+	LocationCode string     `xml:"locationCode,attr"`
+	StartDate    string     `xml:"startDate,attr,omitempty"`
+	EndDate      string     `xml:"endDate,attr,omitempty"`
+	Latitude     XMLValue   `xml:"Latitude"`
+	Longitude    XMLValue   `xml:"Longitude"`
+	Elevation    XMLValue   `xml:"Elevation"`
+	Depth        XMLValue   `xml:"Depth"`
+	Azimuth      XMLValue   `xml:"Azimuth,omitempty"`
+	Dip          XMLValue   `xml:"Dip,omitempty"`
+	SampleRate   float64    `xml:"SampleRate,omitempty"`
 	Sensor       *XMLSensor `xml:"Sensor,omitempty"`
 }
 

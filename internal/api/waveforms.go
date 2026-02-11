@@ -54,7 +54,7 @@ func (h *waveformsHandler) proxy(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/vnd.fdsn.mseed")
 	w.Header().Set("Content-Disposition", "inline")
-	io.Copy(w, body)
+	_, _ = io.Copy(w, body)
 }
 
 func parseInt64(s string) int64 {

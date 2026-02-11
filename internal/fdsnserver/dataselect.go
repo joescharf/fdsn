@@ -58,7 +58,7 @@ func (h *dataselectHandler) query(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/vnd.fdsn.mseed")
 	w.WriteHeader(resp.StatusCode)
-	io.Copy(w, resp.Body)
+	_, _ = io.Copy(w, resp.Body)
 }
 
 func (h *dataselectHandler) version(w http.ResponseWriter, r *http.Request) {

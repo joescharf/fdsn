@@ -14,7 +14,7 @@ func TestConfigDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ConfigDir() error: %v", err)
 	}
-	if !strings.HasSuffix(dir, filepath.Join("fdsn")) {
+	if !strings.HasSuffix(dir, "fdsn") {
 		t.Errorf("ConfigDir() = %q, want path ending in /fdsn", dir)
 	}
 	// Should be $HOME/.config/fdsn

@@ -31,7 +31,7 @@ func (s *availabilityStore) UpsertBatch(items []AvailabilityItem) error {
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	stmt, err := tx.Prepare(`
 		INSERT INTO availability (channel_id, earliest, latest)

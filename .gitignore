@@ -37,7 +37,8 @@ build/
 
 # UI (bun/React)
 ui/node_modules/
-internal/ui/dist/assets/
+internal/ui/dist/*
+!internal/ui/dist/.gitkeep
 
 # Docs (mkdocs-material)
 docs/.venv/

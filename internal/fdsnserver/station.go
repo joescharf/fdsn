@@ -55,13 +55,15 @@ func (h *stationHandler) queryTextNetworks(w http.ResponseWriter, p StationParam
 	for rows.Next() {
 		var code, desc string
 		var start, end *time.Time
-		rows.Scan(&code, &desc, &start, &end)
+		if err := rows.Scan(&code, &desc, &start, &end); err != nil {
+			continue
+		}
 		if !matchAny(p.Network, code) {
 			continue
 		}
 		// Count stations
 		var count int
-		h.db.Get(&count, "SELECT COUNT(*) FROM stations s JOIN networks n ON s.network_id = n.id WHERE n.code = ?", code)
+		_ = h.db.Get(&count, "SELECT COUNT(*) FROM stations s JOIN networks n ON s.network_id = n.id WHERE n.code = ?", code)
 		fmt.Fprintf(w, "%s|%s|%s|%s|%d\n",
 			code, desc, formatTime(start), formatTime(end), count)
 	}
@@ -113,23 +115,23 @@ func (h *stationHandler) queryTextStations(w http.ResponseWriter, p StationParam
 
 func (h *stationHandler) queryTextChannels(w http.ResponseWriter, p StationParams) {
 	type row struct {
-		Network     string     `db:"network_code"`
-		Station     string     `db:"station_code"`
-		Location    string     `db:"location_code"`
-		Channel     string     `db:"channel_code"`
-		Latitude    float64    `db:"latitude"`
-		Longitude   float64    `db:"longitude"`
-		Elevation   float64    `db:"elevation"`
-		Depth       float64    `db:"depth"`
-		Azimuth     float64    `db:"azimuth"`
-		Dip         float64    `db:"dip"`
-		Sensor      string     `db:"sensor_description"`
-		Scale       float64    `db:"scale"`
-		ScaleFreq   float64    `db:"scale_freq"`
-		ScaleUnits  string     `db:"scale_units"`
-		SampleRate  float64    `db:"sample_rate"`
-		StartTime   *time.Time `db:"start_time"`
-		EndTime     *time.Time `db:"end_time"`
+		Network    string     `db:"network_code"`
+		Station    string     `db:"station_code"`
+		Location   string     `db:"location_code"`
+		Channel    string     `db:"channel_code"`
+		Latitude   float64    `db:"latitude"`
+		Longitude  float64    `db:"longitude"`
+		Elevation  float64    `db:"elevation"`
+		Depth      float64    `db:"depth"`
+		Azimuth    float64    `db:"azimuth"`
+		Dip        float64    `db:"dip"`
+		Sensor     string     `db:"sensor_description"`
+		Scale      float64    `db:"scale"`
+		ScaleFreq  float64    `db:"scale_freq"`
+		ScaleUnits string     `db:"scale_units"`
+		SampleRate float64    `db:"sample_rate"`
+		StartTime  *time.Time `db:"start_time"`
+		EndTime    *time.Time `db:"end_time"`
 	}
 
 	var rows []row
@@ -183,7 +185,10 @@ func (h *stationHandler) queryXML(w http.ResponseWriter, p StationParams) {
 		EndTime     *time.Time `db:"end_time"`
 	}
 	var nets []netRow
-	h.db.Select(&nets, "SELECT id, code, description, start_time, end_time FROM networks ORDER BY code")
+	if err := h.db.Select(&nets, "SELECT id, code, description, start_time, end_time FROM networks ORDER BY code"); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	for _, n := range nets {
 		if !matchAny(p.Network, n.Code) {
@@ -209,7 +214,7 @@ func (h *stationHandler) queryXML(w http.ResponseWriter, p StationParams) {
 				EndTime   *time.Time `db:"end_time"`
 			}
 			var stas []staRow
-			h.db.Select(&stas, "SELECT id, code, latitude, longitude, elevation, site_name, start_time, end_time FROM stations WHERE network_id = ? ORDER BY code", n.ID)
+			_ = h.db.Select(&stas, "SELECT id, code, latitude, longitude, elevation, site_name, start_time, end_time FROM stations WHERE network_id = ? ORDER BY code", n.ID)
 
 			for _, s := range stas {
 				if !matchAny(p.Station, s.Code) {
@@ -242,7 +247,7 @@ func (h *stationHandler) queryXML(w http.ResponseWriter, p StationParams) {
 						EndTime      *time.Time `db:"end_time"`
 					}
 					var chs []chRow
-					h.db.Select(&chs, "SELECT code, location_code, latitude, longitude, elevation, depth, azimuth, dip, sensor_description, sample_rate, start_time, end_time FROM channels WHERE station_id = ? ORDER BY location_code, code", s.ID)
+					_ = h.db.Select(&chs, "SELECT code, location_code, latitude, longitude, elevation, depth, azimuth, dip, sensor_description, sample_rate, start_time, end_time FROM channels WHERE station_id = ? ORDER BY location_code, code", s.ID)
 
 					for _, c := range chs {
 						if !matchAny(p.Channel, c.Code) || !matchAny(p.Location, c.LocationCode) {
@@ -277,10 +282,10 @@ func (h *stationHandler) queryXML(w http.ResponseWriter, p StationParams) {
 	}
 
 	w.Header().Set("Content-Type", "application/xml")
-	w.Write([]byte(xml.Header))
+	_, _ = w.Write([]byte(xml.Header))
 	enc := xml.NewEncoder(w)
 	enc.Indent("", "  ")
-	enc.Encode(stationXML)
+	_ = enc.Encode(stationXML)
 }
 
 func (h *stationHandler) version(w http.ResponseWriter, r *http.Request) {

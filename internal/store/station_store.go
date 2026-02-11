@@ -84,7 +84,7 @@ func (s *stationStore) ImportStations(sourceID int64, channels []models.ImportCh
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// Cache network and station IDs to avoid repeated lookups
 	type netKey struct{ code string }

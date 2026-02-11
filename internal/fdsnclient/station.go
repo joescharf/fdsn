@@ -25,23 +25,23 @@ type StationTextRow struct {
 
 // ChannelTextRow represents one row from an FDSN channel text-format response.
 type ChannelTextRow struct {
-	Network          string
-	Station          string
-	Location         string
-	Channel          string
-	Latitude         float64
-	Longitude        float64
-	Elevation        float64
-	Depth            float64
-	Azimuth          float64
-	Dip              float64
+	Network           string
+	Station           string
+	Location          string
+	Channel           string
+	Latitude          float64
+	Longitude         float64
+	Elevation         float64
+	Depth             float64
+	Azimuth           float64
+	Dip               float64
 	SensorDescription string
-	Scale            float64
-	ScaleFreq        float64
-	ScaleUnits       string
-	SampleRate       float64
-	StartTime        *time.Time
-	EndTime          *time.Time
+	Scale             float64
+	ScaleFreq         float64
+	ScaleUnits        string
+	SampleRate        float64
+	StartTime         *time.Time
+	EndTime           *time.Time
 }
 
 // StationQuery holds query parameters for the FDSN station service.
@@ -178,10 +178,10 @@ func parseChannelText(r io.Reader) ([]ChannelTextRow, error) {
 		}
 
 		row := ChannelTextRow{
-			Network:           strings.TrimSpace(fields[0]),
-			Station:           strings.TrimSpace(fields[1]),
-			Location:          strings.TrimSpace(fields[2]),
-			Channel:           strings.TrimSpace(fields[3]),
+			Network:  strings.TrimSpace(fields[0]),
+			Station:  strings.TrimSpace(fields[1]),
+			Location: strings.TrimSpace(fields[2]),
+			Channel:  strings.TrimSpace(fields[3]),
 		}
 		row.Latitude, _ = strconv.ParseFloat(strings.TrimSpace(fields[4]), 64)
 		row.Longitude, _ = strconv.ParseFloat(strings.TrimSpace(fields[5]), 64)

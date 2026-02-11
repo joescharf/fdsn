@@ -117,16 +117,17 @@ func (h *importHandler) importStations(w http.ResponseWriter, r *http.Request) {
 	if h.availabilityStore != nil {
 		availCount, availErr := h.fetchAvailability(client, src.ID, channels)
 		resp.AvailabilityCount = availCount
-		if availErr != "" {
+		switch {
+		case availErr != "":
 			resp.AvailabilityError = availErr
 			if strings.Contains(availErr, "not supported") {
 				resp.AvailabilityStatus = "not_supported"
 			} else {
 				resp.AvailabilityStatus = "error"
 			}
-		} else if availCount > 0 {
+		case availCount > 0:
 			resp.AvailabilityStatus = "ok"
-		} else {
+		default:
 			resp.AvailabilityStatus = "no_data"
 		}
 	} else {

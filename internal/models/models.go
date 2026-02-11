@@ -35,10 +35,10 @@ type Station struct {
 	CreatedAt time.Time  `db:"created_at" json:"created_at"`
 
 	// Joined fields (not always populated)
-	NetworkCode string `db:"network_code" json:"network_code,omitempty"`
-	SourceName  string `db:"source_name" json:"source_name,omitempty"`
-	SourceID    int64  `db:"source_id" json:"source_id,omitempty"`
-	HasAvailability bool `db:"has_availability" json:"has_availability"`
+	NetworkCode     string `db:"network_code" json:"network_code,omitempty"`
+	SourceName      string `db:"source_name" json:"source_name,omitempty"`
+	SourceID        int64  `db:"source_id" json:"source_id,omitempty"`
+	HasAvailability bool   `db:"has_availability" json:"has_availability"`
 }
 
 type Channel struct {
@@ -84,35 +84,35 @@ type ChannelAvailability struct {
 type StationDetail struct {
 	Station
 	Channels     []Channel             `json:"channels"`
-	Availability []ChannelAvailability  `json:"availability,omitempty"`
+	Availability []ChannelAvailability `json:"availability,omitempty"`
 }
 
 // ImportChannel is used when importing channel-level data from an external FDSN source.
 type ImportChannel struct {
-	NetworkCode       string
+	NetworkCode        string
 	NetworkDescription string
-	StationCode       string
-	Latitude          float64
-	Longitude         float64
-	Elevation         float64
-	SiteName          string
-	StationStartTime  *time.Time
-	StationEndTime    *time.Time
-	LocationCode      string
-	ChannelCode       string
-	ChanLatitude      float64
-	ChanLongitude     float64
-	ChanElevation     float64
-	Depth             float64
-	Azimuth           float64
-	Dip               float64
-	SensorDescription string
-	Scale             float64
-	ScaleFreq         float64
-	ScaleUnits        string
-	SampleRate        float64
-	ChanStartTime     *time.Time
-	ChanEndTime       *time.Time
+	StationCode        string
+	Latitude           float64
+	Longitude          float64
+	Elevation          float64
+	SiteName           string
+	StationStartTime   *time.Time
+	StationEndTime     *time.Time
+	LocationCode       string
+	ChannelCode        string
+	ChanLatitude       float64
+	ChanLongitude      float64
+	ChanElevation      float64
+	Depth              float64
+	Azimuth            float64
+	Dip                float64
+	SensorDescription  string
+	Scale              float64
+	ScaleFreq          float64
+	ScaleUnits         string
+	SampleRate         float64
+	ChanStartTime      *time.Time
+	ChanEndTime        *time.Time
 }
 
 // SourceNetwork represents a unique source+network pair for refresh targets.

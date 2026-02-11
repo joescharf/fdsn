@@ -118,11 +118,12 @@ func parseOptionalFloat(s string) *float64 {
 	decimal := false
 	divisor := 1.0
 	for _, c := range s {
-		if c == '-' {
+		switch {
+		case c == '-':
 			negative = true
-		} else if c == '.' {
+		case c == '.':
 			decimal = true
-		} else if c >= '0' && c <= '9' {
+		case c >= '0' && c <= '9':
 			if decimal {
 				divisor *= 10
 				f += float64(c-'0') / divisor
