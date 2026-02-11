@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,11 +18,20 @@ function isoString(date: Date): string {
 }
 
 export function WaveformsPage() {
-  const [sourceId, setSourceId] = useState(0);
-  const [networkCode, setNetworkCode] = useState("");
-  const [stationId, setStationId] = useState(0);
-  const [stationCode, setStationCode] = useState("");
-  const [channelKey, setChannelKey] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Read URL params once on mount for pre-population from channel table clicks
+  const initialSourceId = Number(searchParams.get("source_id")) || 0;
+  const initialNetwork = searchParams.get("network") || "";
+  const initialStationId = Number(searchParams.get("station_id")) || 0;
+  const initialStation = searchParams.get("station") || "";
+  const initialChannel = searchParams.get("channel") || "";
+
+  const [sourceId, setSourceId] = useState(initialSourceId);
+  const [networkCode, setNetworkCode] = useState(initialNetwork);
+  const [stationId, setStationId] = useState(initialStationId);
+  const [stationCode, setStationCode] = useState(initialStation);
+  const [channelKey, setChannelKey] = useState(initialChannel);
   const now = new Date();
   const hourAgo = new Date(now.getTime() - 3600 * 1000);
   const [starttime, setStarttime] = useState(isoString(hourAgo));
@@ -31,6 +41,13 @@ export function WaveformsPage() {
     latest: string;
   } | null>(null);
   const [fetchParams, setFetchParams] = useState<any>(null);
+
+  // Clear search params after reading to keep URL clean
+  useEffect(() => {
+    if (searchParams.has("source_id")) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []);
 
   const { data: waveformData, isLoading, isError, error } = useWaveformData(fetchParams);
 

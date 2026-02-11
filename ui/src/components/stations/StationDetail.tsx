@@ -10,7 +10,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Trash2, RefreshCw } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, Trash2, RefreshCw, Info } from "lucide-react";
 import { StationMap } from "@/components/map/StationMap";
 import { ChannelTable } from "./ChannelTable";
 import { toast } from "sonner";
@@ -25,7 +37,7 @@ export function StationDetail() {
   const qc = useQueryClient();
 
   const handleDelete = () => {
-    if (!station || !confirm(`Delete station ${station.network_code}.${station.code}?`)) return;
+    if (!station) return;
     deleteMutation.mutate(station.id, {
       onSuccess: () => {
         toast.success("Station deleted");
@@ -48,7 +60,15 @@ export function StationDetail() {
           if (data.availability_count > 0) {
             parts.push(`${data.availability_count} availability records`);
           }
-          toast.success(`Refreshed: ${parts.join(", ")}`);
+          // Add availability status info
+          if (data.availability_status === "not_supported") {
+            parts.push("Availability: not supported by this source");
+          } else if (data.availability_status === "no_data") {
+            parts.push("Availability: no data found");
+          } else if (data.availability_status === "error") {
+            parts.push(`Availability: ${data.availability_error || "fetch error"}`);
+          }
+          toast.success(`Refreshed: ${parts.join(". ")}`);
           qc.invalidateQueries({ queryKey: ["stations", Number(id)] });
           qc.invalidateQueries({ queryKey: ["availability"] });
         },
@@ -66,6 +86,8 @@ export function StationDetail() {
   if (!station) {
     return <p className="text-muted-foreground">Station not found</p>;
   }
+
+  const hasAvailability = station.availability && station.availability.length > 0;
 
   return (
     <div className="space-y-6">
@@ -93,10 +115,33 @@ export function StationDetail() {
               {importMutation.isPending ? "Refreshing..." : "Refresh Data"}
             </Button>
           ) : null}
-          <Button variant="destructive" size="sm" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Station</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete{" "}
+                  <span className="font-mono font-medium">
+                    {station.network_code}.{station.code}
+                  </span>
+                  ? This will remove the station, all its channels, and associated
+                  availability data. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
@@ -145,9 +190,22 @@ export function StationDetail() {
         <h3 className="text-lg font-semibold mb-3">
           Channels ({station.channels?.length ?? 0})
         </h3>
+        {!hasAvailability && (station.channels?.length ?? 0) > 0 && (
+          <Alert className="mb-3">
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              No availability data loaded. This source may not support the FDSN availability service.
+              Try refreshing to check.
+            </AlertDescription>
+          </Alert>
+        )}
         <ChannelTable
           channels={station.channels ?? []}
           availability={station.availability}
+          sourceId={station.source_id}
+          networkCode={station.network_code}
+          stationCode={station.code}
+          stationId={station.id}
         />
       </div>
     </div>
