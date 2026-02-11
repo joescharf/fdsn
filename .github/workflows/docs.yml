@@ -32,7 +32,7 @@ jobs:
       - name: Build docs
         run: cd docs && uv run mkdocs build
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: docs/site
 
