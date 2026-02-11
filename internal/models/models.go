@@ -12,6 +12,14 @@ type Source struct {
 	UpdatedAt   time.Time `db:"updated_at" json:"updated_at"`
 }
 
+// SourceSummary extends Source with aggregate counts.
+type SourceSummary struct {
+	Source
+	NetworkCount      int64 `db:"network_count" json:"network_count"`
+	StationCount      int64 `db:"station_count" json:"station_count"`
+	AvailabilityCount int64 `db:"availability_count" json:"availability_count"`
+}
+
 type Network struct {
 	ID          int64      `db:"id" json:"id"`
 	SourceID    int64      `db:"source_id" json:"source_id"`

@@ -6,15 +6,8 @@ import type { ExploreStation, Source, Station } from "@/types";
 import { StationSearch } from "./StationSearch";
 import { StationResults } from "./StationResults";
 import { ImportDialog } from "./ImportDialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SourcePicker } from "./SourcePicker";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 
 interface SearchParams {
   net: string;
@@ -90,31 +83,19 @@ export function ExplorerPage() {
         </p>
       </div>
 
-      <div className="flex items-end gap-4">
-        <div className="space-y-2">
-          <Label>Source</Label>
-          <Select
-            value={sourceId > 0 ? String(sourceId) : ""}
-            onValueChange={(v) => {
-              setSourceId(Number(v));
-              setSearchParams(null);
-              setSelected([]);
-            }}
-          >
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Select a source" />
-            </SelectTrigger>
-            <SelectContent>
-              {sources?.map((s: Source) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {sourceId > 0 && <StationSearch onSearch={handleSearch} />}
-      </div>
+      {sources && (
+        <SourcePicker
+          sources={sources}
+          sourceId={sourceId}
+          onSelect={(id) => {
+            setSourceId(id);
+            setSearchParams(null);
+            setSelected([]);
+          }}
+        />
+      )}
+
+      {sourceId > 0 && <StationSearch onSearch={handleSearch} />}
 
       {sourceId > 0 && importedNetworks && importedNetworks.length > 0 && (
         <div className="space-y-2">

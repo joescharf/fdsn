@@ -23,6 +23,33 @@ func (s *sourceStore) List() ([]models.Source, error) {
 	return sources, err
 }
 
+func (s *sourceStore) ListWithStats() ([]models.SourceSummary, error) {
+	const query = `
+SELECT s.*,
+  COALESCE(agg.network_count, 0) AS network_count,
+  COALESCE(agg.station_count, 0) AS station_count,
+  COALESCE(agg.availability_count, 0) AS availability_count
+FROM sources s
+LEFT JOIN (
+  SELECT n.source_id,
+    COUNT(DISTINCT n.id) AS network_count,
+    COUNT(DISTINCT st.id) AS station_count,
+    COUNT(DISTINCT CASE WHEN EXISTS (
+      SELECT 1 FROM availability a
+      JOIN channels c ON a.channel_id = c.id
+      WHERE c.station_id = st.id
+    ) THEN st.id END) AS availability_count
+  FROM networks n
+  LEFT JOIN stations st ON st.network_id = n.id
+  GROUP BY n.source_id
+) agg ON agg.source_id = s.id
+ORDER BY s.name`
+
+	var summaries []models.SourceSummary
+	err := s.db.Select(&summaries, query)
+	return summaries, err
+}
+
 func (s *sourceStore) Get(id int64) (*models.Source, error) {
 	var src models.Source
 	err := s.db.Get(&src, "SELECT * FROM sources WHERE id = ?", id)

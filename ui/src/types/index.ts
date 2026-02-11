@@ -6,6 +6,9 @@ export interface Source {
   enabled: boolean;
   created_at: string;
   updated_at: string;
+  network_count?: number;
+  station_count?: number;
+  availability_count?: number;
 }
 
 export interface Network {

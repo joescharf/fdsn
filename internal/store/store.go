@@ -7,6 +7,7 @@ import (
 // SourceStore manages FDSN source configuration.
 type SourceStore interface {
 	List() ([]models.Source, error)
+	ListWithStats() ([]models.SourceSummary, error)
 	Get(id int64) (*models.Source, error)
 	Create(s *models.Source) error
 	Update(s *models.Source) error

@@ -15,13 +15,13 @@ type sourcesHandler struct {
 }
 
 func (h *sourcesHandler) list(w http.ResponseWriter, r *http.Request) {
-	sources, err := h.store.List()
+	sources, err := h.store.ListWithStats()
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	if sources == nil {
-		sources = []models.Source{}
+		sources = []models.SourceSummary{}
 	}
 	writeJSON(w, http.StatusOK, sources)
 }
