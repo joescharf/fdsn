@@ -8,11 +8,11 @@ Sources represent external FDSN data centres that the portal connects to for exp
 
 ## Default Sources
 
-Two sources are pre-configured when you initialise the database:
+Two sources are automatically seeded into the database on startup from the config file:
 
 | Name | Base URL | Description |
 |------|----------|-------------|
-| IRIS | `https://service.iris.edu` | IRIS Data Management Center (now EarthScope) |
+| Earthscope | `https://service.iris.edu` | Earthscope (formerly IRIS) |
 | ORFEUS | `https://www.orfeus-eu.org` | ORFEUS Data Center (Europe) |
 
 ## Common FDSN Data Centres
@@ -21,7 +21,7 @@ Beyond the defaults, you can add any FDSN-compliant data centre. The following t
 
 | Name | Base URL | Region |
 |------|----------|--------|
-| IRIS/EarthScope | `https://service.iris.edu` | North America |
+| Earthscope | `https://service.iris.edu` | North America |
 | ORFEUS | `https://www.orfeus-eu.org` | Europe |
 | GFZ | `https://geofon.gfz-potsdam.de` | Germany |
 | INGV | `http://webservices.ingv.it` | Italy |

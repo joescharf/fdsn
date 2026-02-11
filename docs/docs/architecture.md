@@ -9,7 +9,7 @@ The following diagram shows the major components and how they interact. Everythi
 ```mermaid
 flowchart TB
     subgraph ext["External FDSN Sources"]
-        IRIS["IRIS (service.iris.edu)"]
+        IRIS["Earthscope (service.iris.edu)"]
         ORFEUS["ORFEUS (www.orfeus-eu.org)"]
         OTHER["Other FDSN Centres"]
     end

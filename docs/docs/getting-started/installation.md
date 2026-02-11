@@ -17,6 +17,18 @@ Choose one of the methods below to install FDSN Portal.
 
     This installs the `fdsn` binary with the embedded UI included.
 
+=== "Binary Download"
+
+    Download the latest release for your platform from [GitHub Releases](https://github.com/joescharf/fdsn/releases).
+
+    Extract the archive and move the binary to a directory on your `PATH`:
+
+    ```bash
+    # Example for Linux amd64
+    tar xzf fdsn_*_linux_amd64.tar.gz
+    sudo mv fdsn /usr/local/bin/
+    ```
+
 === "Docker"
 
     Run FDSN Portal as a container with a persistent volume for the database:
@@ -32,32 +44,6 @@ Choose one of the methods below to install FDSN Portal.
     ```bash
     docker run -v fdsn-data:/data ghcr.io/joescharf/fdsn:latest config init
     ```
-
-=== "Binary Download"
-
-    Download the latest release for your platform from [GitHub Releases](https://github.com/joescharf/fdsn/releases).
-
-    Extract the archive and move the binary to a directory on your `PATH`:
-
-    ```bash
-    # Example for Linux amd64
-    tar xzf fdsn_*_linux_amd64.tar.gz
-    sudo mv fdsn /usr/local/bin/
-    ```
-
-=== "go install"
-
-    Install with `go install`:
-
-    ```bash
-    go install github.com/joescharf/fdsn@latest
-    ```
-
-    This downloads the module, builds the binary, and places it in your `$GOPATH/bin` directory. Make sure that directory is on your `PATH`.
-
-    !!! warning "No embedded UI"
-
-        Binaries installed via `go install` do **not** include the React UI because the UI build step requires Bun and is not part of the standard Go build. You will get a fully functional backend with API and FDSN endpoints, but no web interface. For the full experience, use Homebrew, Docker, or build from source.
 
 === "Build from Source"
 
@@ -75,6 +61,20 @@ Choose one of the methods below to install FDSN Portal.
     !!! note "Bun required for source builds"
 
         Building from source requires [Bun](https://bun.sh/) because the React UI is bundled during the build. The `make deps` target will install Bun and its packages for you, but you can also install it manually if you prefer.
+
+=== "go install"
+
+    Install with `go install`:
+
+    ```bash
+    go install github.com/joescharf/fdsn@latest
+    ```
+
+    This downloads the module, builds the binary, and places it in your `$GOPATH/bin` directory. Make sure that directory is on your `PATH`.
+
+    !!! warning "No embedded UI"
+
+        Binaries installed via `go install` do **not** include the React UI because the UI build step requires Bun and is not part of the standard Go build. You will get a fully functional backend with API and FDSN endpoints, but no web interface. For the full experience, use Homebrew, Docker, or build from source.
 
 ## Verify Installation
 

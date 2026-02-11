@@ -11,7 +11,7 @@ Seismic station metadata management -- import, explore, and re-serve FDSN data f
 
 - **Single binary deployment** -- Go backend with an embedded React UI, nothing else to install
 - **Zero external dependencies** -- pure-Go SQLite driver (no CGO), no separate database server required
-- **Connect to any FDSN data centre** -- IRIS, ORFEUS, and any other standards-compliant source
+- **Connect to any FDSN data centre** -- Earthscope, ORFEUS, and any other standards-compliant source
 - **Standard FDSN web-service endpoints** -- `/fdsnws/station`, `/fdsnws/dataselect`, `/fdsnws/availability`
 - **Interactive web UI** -- dashboard, station explorer, interactive map, and waveform viewer
 - **Flexible configuration** -- YAML config file, environment variables, and CLI flags
@@ -20,48 +20,37 @@ Seismic station metadata management -- import, explore, and re-serve FDSN data f
 
 ### Install
 
-=== "Homebrew"
+**Homebrew** (macOS / Linux):
 
 ```bash
 brew install joescharf/tap/fdsn
 ```
 
-=== "Go"
+**Binary download:**
 
-```bash
-go install github.com/joescharf/fdsn@latest
-```
+Download from [GitHub Releases](https://github.com/joescharf/fdsn/releases) and add to PATH.
 
-> **Note:** `go install` builds a backend-only binary without the embedded UI.
-
-=== "Docker"
+**Docker:**
 
 ```bash
 docker run -p 8080:8080 -v fdsn-data:/data ghcr.io/joescharf/fdsn:latest
 ```
 
-=== "Binary"
-
-Download the latest release from [GitHub Releases](https://github.com/joescharf/fdsn/releases).
-
 ### Run
 
 ```bash
-# Initialize configuration
-fdsn config init
-
-# Start the server
-fdsn serve
+fdsn config init    # Create default config with Earthscope + ORFEUS sources
+fdsn serve          # Start server — opens http://localhost:8080 in your browser
 ```
 
-Open [http://localhost:8080](http://localhost:8080) to access the web UI.
+The server automatically seeds the configured data sources into the database on startup and opens the web UI in your default browser. Use `--no-browser` to disable auto-open.
 
 ## Architecture
 
 ```
   External FDSN Sources          FDSN Portal             Outputs
  ┌───────────────────┐     ┌──────────────────┐
- │ IRIS              │     │                  │──▸ FDSN Web Services
+ │ Earthscope        │     │                  │──▸ FDSN Web Services
  │ ORFEUS            │──▸──│  Go binary       │     /fdsnws/station
  │ Other data centres│     │  + React UI      │     /fdsnws/dataselect
  └───────────────────┘     │  + SQLite DB     │     /fdsnws/availability
@@ -78,6 +67,7 @@ Key settings (configured via `~/.config/fdsn/config.yaml`, environment variables
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `server.port` | `8080` | HTTP listen port |
+| `server.no_browser` | `false` | Disable auto-opening the browser on startup |
 | `db.path` | `~/.config/fdsn/fdsn.db` | SQLite database path |
 | `log.level` | `info` | Log level (debug, info, warn, error) |
 

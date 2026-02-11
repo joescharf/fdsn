@@ -42,6 +42,7 @@ The table below lists every configuration key, its default value, and a descript
 | Key | Default | Description |
 |-----|---------|-------------|
 | `server.port` | `8080` | HTTP server listen port |
+| `server.no_browser` | `false` | When `true`, do not auto-open the browser on `fdsn serve` |
 | `db.path` | `~/.config/fdsn/fdsn.db` | Path to the SQLite database file. Falls back to `./fdsn.db` if the config directory is unavailable. |
 | `log.level` | `info` | Application log level |
 | `sources` | *(see below)* | Array of preset FDSN data sources |
@@ -58,8 +59,10 @@ The `sources` key ships with two pre-configured FDSN data centers:
 
 | Name | Base URL | Description |
 |------|----------|-------------|
-| IRIS | `https://service.iris.edu` | IRIS Data Management Center |
+| Earthscope | `https://service.iris.edu` | Earthscope (formerly IRIS) |
 | ORFEUS | `https://www.orfeus-eu.org` | ORFEUS Data Center (Europe) |
+
+Sources listed in the config file are automatically seeded into the database when `fdsn serve` starts, so there is no need to add them manually through the web UI.
 
 ## Example Config File
 
@@ -68,6 +71,7 @@ Below is a complete `config.yaml` showing every key at its default value:
 ```yaml
 server:
   port: 8080
+  no_browser: false
 
 db:
   path: ~/.config/fdsn/fdsn.db
@@ -76,9 +80,9 @@ log:
   level: info
 
 sources:
-  - name: IRIS
+  - name: Earthscope
     base_url: https://service.iris.edu
-    description: IRIS Data Management Center
+    description: Earthscope (formerly IRIS)
   - name: ORFEUS
     base_url: https://www.orfeus-eu.org
     description: ORFEUS Data Center (Europe)
@@ -97,6 +101,7 @@ Every configuration key can be set through an environment variable. FDSN Portal 
 
     ```bash
     export FDSN_SERVER_PORT=9090
+    export FDSN_SERVER_NO_BROWSER=true
     export FDSN_DB_PATH=/data/fdsn.db
     export FDSN_LOG_LEVEL=debug
     ```

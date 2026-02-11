@@ -1,66 +1,66 @@
 ---
 title: Quickstart
-description: Go from zero to browsing seismic station data in five steps.
+description: Go from zero to browsing seismic station data in four steps.
 ---
 
 # Quickstart
 
 This walkthrough takes you from a fresh install to importing and browsing seismic station metadata. The entire process takes only a few minutes.
 
-## Step 1: Initialize Configuration
+## Step 1: Install
+
+Install FDSN Portal using one of the methods on the [Installation](installation.md) page. The quickest option:
+
+```bash
+brew install joescharf/tap/fdsn
+```
+
+## Step 2: Initialize & Start
 
 ```bash
 fdsn config init
-```
-
-This creates a default configuration file at `~/.config/fdsn/config.yaml`. The defaults include two pre-configured FDSN data sources -- **IRIS** (`https://service.iris.edu`) and **ORFEUS** (`https://www.orfeus-eu.org`) -- so you can start querying immediately without any manual setup.
-
-## Step 2: Start the Server
-
-```bash
 fdsn serve
 ```
 
-The server starts on `http://localhost:8080`. On first launch it automatically creates the SQLite database at `~/.config/fdsn/fdsn.db` and runs all pending migrations. You will see log output confirming the server is ready.
+`config init` creates a default configuration at `~/.config/fdsn/config.yaml` with two pre-configured data sources -- **Earthscope** (`https://service.iris.edu`) and **ORFEUS** (`https://www.orfeus-eu.org`).
+
+`serve` starts the server, automatically seeds the configured sources into the database, and opens `http://localhost:8080` in your default browser. You should see output like:
+
+```
+  FDSN Portal → http://localhost:8080
+```
+
+!!! tip "Disable auto-open"
+
+    Use `fdsn serve --no-browser` if you prefer to open the browser manually.
 
 !!! tip "Changing the port"
 
     Use the `--port` flag to listen on a different port: `fdsn serve --port 9090`.
 
-## Step 3: Add a Data Source (or Use the Defaults)
+## Step 3: Explore Earthscope Stations
 
-IRIS and ORFEUS are already configured out of the box. To manage sources, open the Sources page in your browser:
+Navigate to the Station Explorer at [http://localhost:8080/explorer](http://localhost:8080/explorer).
 
-```
-http://localhost:8080/sources
-```
+1. Select **Earthscope** from the source dropdown
+2. Enter network `IU` and station `ANMO` (Albuquerque Seismological Laboratory -- a well-known global reference station)
+3. Click **Search** to query the remote Earthscope FDSN service
+4. Review the results and click **Import** to save the station metadata to your local database
 
-From here you can add, edit, or remove FDSN data centres. Sources can also be managed through the REST API at `/api/v1/sources`.
-
-## Step 4: Explore and Import Stations
-
-Navigate to the Station Explorer:
-
-```
-http://localhost:8080/explorer
-```
-
-Select a source from the dropdown, enter search parameters (for example, network `IU` and station `ANMO`), and run the query. The explorer shows matching stations from the remote FDSN service. Click **Import** to save the results to your local database for offline access and fast lookups.
-
-## Step 5: Browse Your Data
+## Step 4: Browse Imported Data
 
 Once stations have been imported, you can view and interact with them in several ways:
 
 | View | URL | Description |
 |------|-----|-------------|
-| Station Browser | `http://localhost:8080/stations` | Searchable, sortable table of all imported stations |
-| Interactive Map | `http://localhost:8080/map` | Leaflet map showing station locations with clickable markers |
-| Waveform Viewer | `http://localhost:8080/waveforms` | Visualize waveform data using seisplotjs |
+| Station Browser | [/stations](http://localhost:8080/stations) | Searchable, sortable table of all imported stations |
+| Interactive Map | [/map](http://localhost:8080/map) | Leaflet map showing station locations with clickable markers |
+| Waveform Viewer | [/waveforms](http://localhost:8080/waveforms) | Visualize waveform data using seisplotjs |
 
-Your imported data is also available through standard FDSN web-service endpoints, for example:
+Your imported data is also available through standard FDSN web-service endpoints:
 
-```
-http://localhost:8080/fdsnws/station/1/query?network=IU&station=ANMO
+```bash
+curl "http://localhost:8080/fdsnws/station/1/query?network=IU&station=ANMO&level=station"
 ```
 
 ## What's Next

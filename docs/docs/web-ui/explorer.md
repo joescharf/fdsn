@@ -12,7 +12,7 @@ The following filters are available when querying an external data centre:
 
 | Filter | Description | Example |
 |--------|-------------|---------|
-| Source | Select which FDSN data centre to query | IRIS, ORFEUS |
+| Source | Select which FDSN data centre to query | Earthscope, ORFEUS |
 | Network | Network code, supports wildcards (`*` and `?`) | `IU`, `US`, `I*` |
 | Station | Station code, supports wildcards | `ANMO`, `CCM`, `A*` |
 | Channel | Channel code, supports wildcards | `BHZ`, `BH?`, `*` |

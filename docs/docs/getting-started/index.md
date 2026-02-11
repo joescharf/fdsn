@@ -5,7 +5,7 @@ description: Install FDSN Portal, run it for the first time, and explore seismic
 
 # Getting Started
 
-FDSN Portal is a self-contained Go + React application for importing, exploring, and re-serving seismic station metadata from FDSN data centres such as IRIS and ORFEUS. In this section you will install the binary, start the server, and walk through the core workflow -- connecting to a data source, importing stations, and browsing the results in the web UI.
+FDSN Portal is a self-contained Go + React application for importing, exploring, and re-serving seismic station metadata from FDSN data centres such as Earthscope and ORFEUS. In this section you will install the binary, start the server, and walk through the core workflow -- importing stations and browsing the results in the web UI.
 
 !!! tip "Single binary, zero dependencies"
 
@@ -13,9 +13,6 @@ FDSN Portal is a self-contained Go + React application for importing, exploring,
 
 ## Prerequisites
 
-Before you begin, make sure you have the following:
-
-- **Go 1.24 or later** -- required to install or build the binary.
 - **No external database required** -- FDSN Portal uses an embedded, pure-Go SQLite driver (no CGO) and creates its database file automatically on first run.
 - **No additional runtime dependencies** -- once you have the `fdsn` binary, everything it needs is included.
 
@@ -23,5 +20,5 @@ Before you begin, make sure you have the following:
 
 | Page | What you will learn |
 |------|---------------------|
-| [Installation](installation.md) | How to install via `go install` or build from source |
-| [Quickstart](quickstart.md) | A five-step walkthrough from first launch to browsing station data |
+| [Installation](installation.md) | How to install via Homebrew, Docker, binary download, or build from source |
+| [Quickstart](quickstart.md) | A four-step walkthrough from first launch to browsing station data |

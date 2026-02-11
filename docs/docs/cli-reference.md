@@ -43,13 +43,14 @@ fdsn serve [flags]
 
 ### Description
 
-Start the HTTP server that serves the FDSN portal UI and API endpoints. On startup the command reads the database path (`db.path`) and server port (`server.port`) from configuration, ensures the database directory exists, opens (or creates) the SQLite database, runs any pending migrations, builds the HTTP router, and begins listening for connections.
+Start the HTTP server that serves the FDSN portal UI and API endpoints. On startup the command reads the database path (`db.path`) and server port (`server.port`) from configuration, ensures the database directory exists, opens (or creates) the SQLite database, runs any pending migrations, seeds any configured sources into the database (if not already present), builds the HTTP router, and begins listening for connections. By default, the server prints a user-friendly URL and opens it in the default browser.
 
 ### Flags
 
 | Flag | Shorthand | Type | Default | Viper Key | Description |
 |------|-----------|------|---------|-----------|-------------|
 | `--port` | `-p` | `int` | `8080` | `server.port` | Port to listen on |
+| `--no-browser` | | `bool` | `false` | `server.no_browser` | Do not open the web browser on startup |
 
 ### Examples
 
@@ -57,6 +58,12 @@ Start the server on the default port (8080):
 
 ```bash
 fdsn serve
+```
+
+Start the server without opening the browser:
+
+```bash
+fdsn serve --no-browser
 ```
 
 Start the server on a custom port:
@@ -97,7 +104,7 @@ fdsn config init
 
 ### Description
 
-Creates the `~/.config/fdsn/` directory (if it does not already exist) and writes a default `config.yaml` file into it. The default configuration includes the built-in application defaults for `server.port`, `db.path`, `log.level`, and the preset FDSN sources (IRIS and ORFEUS).
+Creates the `~/.config/fdsn/` directory (if it does not already exist) and writes a default `config.yaml` file into it. The default configuration includes the built-in application defaults for `server.port`, `db.path`, `log.level`, and the preset FDSN sources (Earthscope and ORFEUS).
 
 !!! note "Existing configuration is preserved"
 

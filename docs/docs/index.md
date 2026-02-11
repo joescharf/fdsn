@@ -9,7 +9,7 @@ description: A single-binary application for seismic station metadata management
 
 ## Overview
 
-FDSN Portal is a Go + React application that connects to external FDSN (International Federation of Digital Seismograph Networks) data centres such as IRIS and ORFEUS, imports station, network, and channel metadata into a local SQLite database, and re-serves that data through standard FDSN web-service endpoints. The entire stack -- backend, database, and frontend -- ships as a single binary with zero external dependencies.
+FDSN Portal is a Go + React application that connects to external FDSN (International Federation of Digital Seismograph Networks) data centres such as Earthscope and ORFEUS, imports station, network, and channel metadata into a local SQLite database, and re-serves that data through standard FDSN web-service endpoints. The entire stack -- backend, database, and frontend -- ships as a single binary with zero external dependencies.
 
 The embedded React UI provides an interactive dashboard, station explorer with filtering, a Leaflet-based map view, and a waveform viewer powered by seisplotjs. Configuration is managed through a YAML file at `~/.config/fdsn/config.yaml`, with support for environment variable overrides and CLI flags via Viper and Cobra.
 
@@ -19,7 +19,7 @@ Whether you are building a local seismic data cache, prototyping against FDSN se
 
 - **Single binary deployment** -- Go backend with an embedded React UI (shadcn/ui components), nothing else to install
 - **Zero external dependencies** -- pure-Go SQLite driver (no CGO), no separate database server required
-- **Connect to any FDSN data centre** -- IRIS (`service.iris.edu`), ORFEUS (`www.orfeus-eu.org`), and any other standards-compliant source
+- **Connect to any FDSN data centre** -- Earthscope (`service.iris.edu`), ORFEUS (`www.orfeus-eu.org`), and any other standards-compliant source
 - **Import and manage station/network/channel metadata locally** -- query remote catalogues and store results in `~/.config/fdsn/fdsn.db`
 - **Standard FDSN web-service endpoints** -- `/fdsnws/station`, `/fdsnws/dataselect`, and `/fdsnws/availability`
 - **Interactive web UI** -- dashboard, station explorer, interactive map (Leaflet), and waveform viewer (seisplotjs)
@@ -29,7 +29,7 @@ Whether you are building a local seismic data cache, prototyping against FDSN se
 
 ```mermaid
 flowchart LR
-    A["External FDSN Sources\n(IRIS, ORFEUS, ...)"] -->|import metadata| B["FDSN Portal\n(Go binary, port 8080)"]
+    A["External FDSN Sources\n(Earthscope, ORFEUS, ...)"] -->|import metadata| B["FDSN Portal\n(Go binary, port 8080)"]
     B -->|persist| C["Local SQLite DB\n(~/.config/fdsn/fdsn.db)"]
     B --> D["FDSN Web Services\n(/fdsnws/station, dataselect, availability)"]
     B --> E["Web UI\n(Dashboard, Explorer, Map, Waveforms)"]

@@ -59,12 +59,15 @@ func SetDefaults() {
 	// Logging
 	viper.SetDefault("log.level", "info")
 
+	// Server browser behavior
+	viper.SetDefault("server.no_browser", false)
+
 	// Preset FDSN sources
 	viper.SetDefault("sources", []map[string]string{
 		{
-			"name":        "IRIS",
+			"name":        "Earthscope",
 			"base_url":    "https://service.iris.edu",
-			"description": "IRIS Data Management Center",
+			"description": "Earthscope (formerly IRIS)",
 		},
 		{
 			"name":        "ORFEUS",

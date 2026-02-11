@@ -54,7 +54,7 @@ Status: `200 OK`
 
 ## Sources
 
-Sources represent external FDSN data centres (such as IRIS or ORFEUS) that the portal can connect to for querying and importing station metadata.
+Sources represent external FDSN data centres (such as Earthscope or ORFEUS) that the portal can connect to for querying and importing station metadata.
 
 ### GET /api/v1/sources
 
@@ -68,9 +68,9 @@ Status: `200 OK`
 [
   {
     "id": 1,
-    "name": "IRIS",
+    "name": "Earthscope",
     "base_url": "https://service.iris.edu",
-    "description": "EarthScope (IRIS) FDSN services",
+    "description": "Earthscope (formerly IRIS)",
     "enabled": true,
     "created_at": "2025-01-15T10:30:00Z",
     "updated_at": "2025-01-15T10:30:00Z"
@@ -146,9 +146,9 @@ Status: `200 OK`
 ```json
 {
   "id": 1,
-  "name": "IRIS",
+  "name": "Earthscope",
   "base_url": "https://service.iris.edu",
-  "description": "EarthScope (IRIS) FDSN services",
+  "description": "Earthscope (formerly IRIS)",
   "enabled": true,
   "created_at": "2025-01-15T10:30:00Z",
   "updated_at": "2025-01-15T10:30:00Z"
@@ -176,7 +176,7 @@ Update an existing source. The request body may include any combination of `name
 
 ```json
 {
-  "name": "IRIS (Updated)",
+  "name": "Earthscope (Updated)",
   "base_url": "https://service.iris.edu",
   "description": "Updated description"
 }
@@ -390,7 +390,7 @@ Status: `200 OK`
       "end_time": null,
       "created_at": "2025-06-01T12:00:00Z",
       "network_code": "IU",
-      "source_name": "IRIS"
+      "source_name": "Earthscope"
     }
   ],
   "total": 1
@@ -428,7 +428,7 @@ Returns a StationDetail object containing the station fields plus a `channels` a
       "end_time": null,
       "created_at": "2025-06-01T12:00:00Z",
       "network_code": "IU",
-      "source_name": "IRIS",
+      "source_name": "Earthscope",
       "channels": [
         {
           "id": 1,
