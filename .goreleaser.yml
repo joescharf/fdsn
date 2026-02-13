@@ -68,7 +68,7 @@ universal_binaries:
   - id: fdsn-macos
     replace: true
     hooks:
-      post: /usr/local/bin/pycodesign.py fdsn_pycodesign.ini -O {{ .Version }}
+      post: /Users/joescharf/.local/bin/pycodesign.py fdsn_pycodesign.ini -O {{ .Version }}
 
 archives:
   - id: fdsn-linux-archive
