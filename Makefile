@@ -61,6 +61,15 @@ mocks: ## Generate mocks with mockery
 	@which mockery > /dev/null 2>&1 || { echo "Install mockery: go install github.com/vektra/mockery/v2@latest"; exit 1; }
 	mockery
 
+##@ Release
+.PHONY: release release-snapshot
+
+release: ## Create a release with goreleaser
+	HOMEBREW_TAP_TOKEN=$$(cat ~/.config/goreleaser/homebrew_tap_token) goreleaser release --clean
+
+release-snapshot: ## Create a snapshot release (no publish)
+	goreleaser release --snapshot --clean --skip docker,homebrew
+
 ##@ Docs (mkdocs-material via uv)
 .PHONY: docs-serve docs-build docs-deps screenshots
 

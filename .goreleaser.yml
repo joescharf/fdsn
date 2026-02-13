@@ -30,6 +30,7 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
 
   # macOS builds (amd64 + arm64 for true universal binary)
   - id: fdsn-macos
@@ -46,6 +47,7 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
 
   # Windows builds
   - id: fdsn-windows
@@ -62,13 +64,14 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
 
 # macOS universal binary with code signing and notarization
 universal_binaries:
   - id: fdsn-macos
     replace: true
     hooks:
-      post: /Users/joescharf/.local/bin/pycodesign.py fdsn_pycodesign.ini -O {{ .Version }}
+      post: uv run /Users/joescharf/.local/bin/pycodesign.py fdsn_pycodesign.ini -O {{ .Version }}
 
 archives:
   - id: fdsn-linux-archive
@@ -76,25 +79,40 @@ archives:
       - fdsn
     formats:
       - tar.gz
+    name_template: "{{ .ProjectName }}_{{ title .Os }}_{{ if eq .Arch \"amd64\" }}x86_64{{ else }}{{ .Arch }}{{ end }}"
     files:
       - README.md
 
-  # macOS archive: zip with binary only (what Homebrew expects)
+  # macOS archive: zip for Homebrew
   - id: fdsn-macos-archive
     ids:
       - fdsn-macos
     formats:
       - zip
+    name_template: "{{ .ProjectName }}_{{ title .Os }}_{{ if eq .Arch \"amd64\" }}x86_64{{ else if eq .Arch \"all\" }}universal{{ else }}{{ .Arch }}{{ end }}"
     files:
-      - none*
+      - README.md
 
   - id: fdsn-windows-archive
     ids:
       - fdsn-windows
     formats:
       - zip
+    name_template: "{{ .ProjectName }}_{{ title .Os }}_{{ if eq .Arch \"amd64\" }}x86_64{{ else }}{{ .Arch }}{{ end }}"
     files:
       - README.md
+
+signs:
+  - id: notarize-macos-zip
+    cmd: sh
+    args:
+      - -c
+      - 'xcrun notarytool submit "${artifact}" --keychain-profile SCHARFNADO_LLC --wait && touch "${signature}"'
+    artifacts: archive
+    ids:
+      - fdsn-macos-archive
+    signature: "${artifact}.notarized"
+    output: true
 
 checksum:
   name_template: "checksums.txt"
@@ -109,14 +127,23 @@ release:
     - fdsn-windows-archive
   extra_files:
     - glob: ./dist/fdsn_macos_universal.pkg
-  draft: true
-  replace_existing_draft: true
+  draft: false
+  prerelease: auto
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: "Bug fixes"
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: Others
+      order: 999
   filters:
     exclude:
       - "^docs:"
@@ -134,6 +161,7 @@ homebrew_casks:
     repository:
       owner: joescharf
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Casks
     skip_upload: auto
     commit_author:
@@ -146,7 +174,7 @@ dockers_v2:
   - images:
       - "ghcr.io/joescharf/fdsn"
     tags:
-      - "{{ .Version }}"
+      - "v{{ .Version }}"
       - "latest"
     platforms:
       - linux/amd64
