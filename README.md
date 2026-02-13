@@ -33,15 +33,17 @@ Seismic station metadata management -- import, explore, and re-serve FDSN data f
 
 ### Install
 
-**Homebrew** (macOS / Linux):
+**Homebrew** (macOS):
 
 ```bash
 brew install joescharf/tap/fdsn
 ```
 
+macOS binaries are code-signed and notarized, so they are trusted by Gatekeeper out of the box.
+
 **Binary download:**
 
-Download from [GitHub Releases](https://github.com/joescharf/fdsn/releases) and add to PATH.
+Download from [GitHub Releases](https://github.com/joescharf/fdsn/releases) and add to PATH. macOS downloads include a signed `.pkg` installer and a universal binary (Intel + Apple Silicon).
 
 **Docker:**
 

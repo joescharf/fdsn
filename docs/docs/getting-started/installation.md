@@ -9,25 +9,29 @@ Choose one of the methods below to install FDSN Portal.
 
 === "Homebrew"
 
-    The easiest way to install on macOS or Linux:
+    The easiest way to install on macOS:
 
     ```bash
     brew install joescharf/tap/fdsn
     ```
 
-    This installs the `fdsn` binary with the embedded UI included.
+    This installs a code-signed and notarized universal binary (Intel + Apple Silicon) with the embedded UI included. The binary is trusted by macOS Gatekeeper -- no manual quarantine removal required.
 
 === "Binary Download"
 
     Download the latest release for your platform from [GitHub Releases](https://github.com/joescharf/fdsn/releases).
 
-    Extract the archive and move the binary to a directory on your `PATH`:
+    **macOS:** Download the `.pkg` installer for a signed and notarized installation, or the `.zip` archive containing the universal binary. Both are trusted by Gatekeeper.
+
+    **Linux:** Extract the archive and move the binary to a directory on your `PATH`:
 
     ```bash
     # Example for Linux amd64
     tar xzf fdsn_*_linux_amd64.tar.gz
     sudo mv fdsn /usr/local/bin/
     ```
+
+    **Windows:** Extract the `.zip` archive and add the directory containing `fdsn.exe` to your `PATH`.
 
 === "Docker"
 

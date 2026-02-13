@@ -1,4 +1,12 @@
+# goreleaser release --clean --release-notes release_notes.md --verbose
+# goreleaser release --snapshot --clean --skip homebrew --verbose
+# goreleaser release --snapshot --clean --skip homebrew,docker
+
 version: 2
+
+# Don't use a FG Pat here. Use Classic PAT b/c ghcr complains about permissions.
+env_files:
+  github_token: ~/.config/goreleaser/github_token
 
 before:
   hooks:
@@ -7,11 +15,44 @@ before:
     - sh -c "rm -rf internal/ui/dist/assets && cp -r ui/dist/* internal/ui/dist/"
 
 builds:
-  - env:
+  # Linux builds
+  - id: fdsn
+    binary: fdsn
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+  # macOS builds (amd64 + arm64 for true universal binary)
+  - id: fdsn-macos
+    binary: fdsn
+    env:
+      - CGO_ENABLED=0
+    goos:
       - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+  # Windows builds
+  - id: fdsn-windows
+    binary: fdsn
+    env:
+      - CGO_ENABLED=0
+    goos:
       - windows
     goarch:
       - amd64
@@ -22,18 +63,54 @@ builds:
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
 
+# macOS universal binary with code signing and notarization
+universal_binaries:
+  - id: fdsn-macos
+    replace: true
+    hooks:
+      post: /usr/local/bin/pycodesign.py fdsn_pycodesign.ini -O {{ .Version }}
+
 archives:
-  - formats:
+  - id: fdsn-linux-archive
+    ids:
+      - fdsn
+    formats:
       - tar.gz
-    format_overrides:
-      - goos: windows
-        formats:
-          - zip
+    files:
+      - README.md
+
+  # macOS archive: zip with binary only (what Homebrew expects)
+  - id: fdsn-macos-archive
+    ids:
+      - fdsn-macos
+    formats:
+      - zip
+    files:
+      - none*
+
+  - id: fdsn-windows-archive
+    ids:
+      - fdsn-windows
+    formats:
+      - zip
     files:
       - README.md
 
 checksum:
   name_template: "checksums.txt"
+
+release:
+  github:
+    owner: joescharf
+    name: fdsn
+  ids:
+    - fdsn-linux-archive
+    - fdsn-macos-archive
+    - fdsn-windows-archive
+  extra_files:
+    - glob: ./dist/fdsn_macos_universal.pkg
+  draft: true
+  replace_existing_draft: true
 
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
@@ -47,39 +124,30 @@ changelog:
       - "^ci:"
       - "^chore:"
 
-brews:
-  - repository:
+# brew install joescharf/tap/fdsn
+homebrew_casks:
+  - name: fdsn
+    ids:
+      - fdsn-macos-archive
+    binaries:
+      - fdsn
+    repository:
       owner: joescharf
       name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    directory: Formula
+    directory: Casks
+    skip_upload: auto
+    commit_author:
+      name: releaserbot
+      email: joe@joescharf.com
     homepage: https://github.com/joescharf/fdsn
     description: "Seismic station metadata management -- import, explore, and re-serve FDSN data from a single binary."
-    install: |
-      bin.install "fdsn"
-    test: |
-      system "#{bin}/fdsn", "version"
 
-dockers:
-  - image_templates:
-      - "ghcr.io/joescharf/fdsn:{{ .Version }}-amd64"
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/amd64"
-    goarch: amd64
-  - image_templates:
-      - "ghcr.io/joescharf/fdsn:{{ .Version }}-arm64"
-    use: buildx
-    build_flag_templates:
-      - "--platform=linux/arm64"
-    goarch: arm64
-
-docker_manifests:
-  - name_template: "ghcr.io/joescharf/fdsn:{{ .Version }}"
-    image_templates:
-      - "ghcr.io/joescharf/fdsn:{{ .Version }}-amd64"
-      - "ghcr.io/joescharf/fdsn:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/joescharf/fdsn:latest"
-    image_templates:
-      - "ghcr.io/joescharf/fdsn:{{ .Version }}-amd64"
-      - "ghcr.io/joescharf/fdsn:{{ .Version }}-arm64"
+dockers_v2:
+  - images:
+      - "ghcr.io/joescharf/fdsn"
+    tags:
+      - "{{ .Version }}"
+      - "latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
